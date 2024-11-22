@@ -2,6 +2,7 @@ from flask import Flask, make_response, jsonify
 from flask_restful import Api, Resource
 from flask_migrate import Migrate
 from flask_cors import CORS
+import os
 
 from api.models import db
 
@@ -16,6 +17,11 @@ api=Api(app)
 
 #Configuring CORS
 CORS(app, origins=["http://localhost:3000", "https://rental-hive.vercel.app"])
+
+# Configuring the database
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ECHO"] = False
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
 
 class Index(Resource):
     def get(self):
