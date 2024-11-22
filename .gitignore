@@ -1,0 +1,12 @@
+# Ignore __pycache__ folders in specific directories
+/__pycache__/
+/api/__pycache__/
+/Generations/__pycache__/
+/Mail/__pycache__/
+/migrations/__pycache__/
+
+# Ignore .vercel directory
+.vercel/
+
+# Ignore environment file
+.env
