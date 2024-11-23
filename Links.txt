@@ -1,0 +1,2 @@
+Database deployment link -> https://console.neon.tech/app/projects/snowy-shape-81039045/branches/br-mute-wave-a5542tnr/tables?database=rent-hive
+    -> Login using GitHub
