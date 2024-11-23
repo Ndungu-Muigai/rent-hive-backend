@@ -8,6 +8,11 @@ from api.models import db
 
 app = Flask(__name__)
 
+# Configuring the database
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ECHO"] = False
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
+
 #Initializing the migration
 migrate=Migrate(app, db)
 db.init_app(app)
@@ -17,11 +22,6 @@ api=Api(app)
 
 #Configuring CORS
 CORS(app, origins=["http://localhost:3000", "https://rental-hive.vercel.app"])
-
-# Configuring the database
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ECHO"] = False
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
 
 class Index(Resource):
     def get(self):
