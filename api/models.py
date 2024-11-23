@@ -79,7 +79,7 @@ class Payments(db.Model):
     __tablename__ = "payments"
 
     payment_ref_no=db.Column(db.String, primary_key=True)
-    invoice_ref_no=db.Column(db.Integer, db.ForeignKey('invoices.ref_no'))
+    invoice_ref_no=db.Column(db.String, db.ForeignKey('invoices.ref_no'))
     mode_of_payment=db.Column(db.String, nullable=False)
     payment_date=db.Column(db.DateTime, nullable=False)
     amount=db.Column(db.Float, nullable=False)
