@@ -37,7 +37,7 @@ api=Api(app)
 Session(app)
 
 #Configuring CORS
-CORS(app, origins=["http://localhost:3000", "https://rental-hive.vercel.app"])
+CORS(app, origins=["http://localhost:3000", "https://rent-hive.vercel.app"])
 
 #Function to extract session data
 def get_session_data():
