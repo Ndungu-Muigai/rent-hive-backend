@@ -4,6 +4,7 @@
 /Generations/__pycache__/
 /Mail/__pycache__/
 /migrations/__pycache__/
+/migrations/versions/__pycache__/
 
 # Ignore .vercel directory
 .vercel/
