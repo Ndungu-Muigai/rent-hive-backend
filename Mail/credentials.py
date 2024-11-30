@@ -14,7 +14,7 @@ def send_login_credentials(first_name, last_name, email, password):
     sender={"name": app.app.config["SENDER_NAME"], "email": app.app.config["SENDER_EMAIL"]}
     email_content=f"""
     <p>Dear {first_name} {last_name},</p>
-    <p>Your Leave Management System account has been created successfully.</p>
+    <p>Your Rent Hive Rental Management System account has been created successfully.</p>
     <p>Use the login credentials below to login: </p>
     <h4>Email: {email}</h4>
     <h4>Password: {password}</h4>
