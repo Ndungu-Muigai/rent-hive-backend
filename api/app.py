@@ -106,23 +106,23 @@ class SignUp(Resource):
 
             print(new_user.email)
 
-            # try:
-            #     send_login_credentials(first_name=first_name,last_name=last_name, email=email, password=password)
-            #     #Returning the response
-            #     return make_response(jsonify(
-            #         {
-            #             "type" : "success",
-            #             "message" : "Account created successfully!"
-            #         }
-            #     ))
-            # except Exception as e:
-            #     print(f"Email error: {e}")
-            #     db.session.rollback()
-            #     return make_response(jsonify(
-            #         {
-            #         "type": "error",
-            #         "message": "Account created but failed to send email. Please check your email settings."
-            #     }), 500)
+            try:
+                send_login_credentials(first_name=first_name,last_name=last_name, email=email, password=password)
+                #Returning the response
+                return make_response(jsonify(
+                    {
+                        "type" : "success",
+                        "message" : "Account created successfully!"
+                    }
+                ))
+            except Exception as e:
+                print(f"Email error: {e}")
+                db.session.rollback()
+                return make_response(jsonify(
+                    {
+                    "type": "error",
+                    "message": "Account created but failed to send email. Please check your email settings."
+                }), 500)
 
         except:
             #Rolling back the database changes
