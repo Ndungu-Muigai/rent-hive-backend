@@ -16,8 +16,8 @@ class Users(db.Model):
     created_at=db.Column(db.DateTime, server_default=db.func.now())
     updated_at=db.Column(db.DateTime, server_default=db.func.now())
 
-    properties=db.relationship("Properties", backref="owner", uselist=True)
-    leases=db.relationship("Leases", backref="tenant", uselist=True)
+    properties=db.relationship("Properties", backref="owner", uselist=True, foreign_keys="[Properties.owner_id]")
+    leases=db.relationship("Leases", backref="tenant", uselist=True, foreign_keys="[Leases.tenant_id]")
 
     def __repr__(self):
         return f"User('{self.first_name}', '{self.last_name}', '{self.email}')"
