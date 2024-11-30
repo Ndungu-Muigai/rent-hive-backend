@@ -5,13 +5,18 @@ from flask_cors import CORS
 import os
 
 from api.models import db
-
+from Mail.credentials import send_login_credentials
 app = Flask(__name__)
 
 # Configuring the database
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
+
+# Email sender configuration
+app.config["SENDER_NAME"] = "Rent Hive Rental Management System"
+app.config["SENDER_EMAIL"] = "rms@rent-hive.co.ke"
+app.static_folder = 'static'
 
 #Initializing the migration
 migrate=Migrate(app, db)
