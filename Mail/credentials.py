@@ -1,5 +1,5 @@
 import sib_api_v3_sdk
-from api.app import app 
+from api import app
 from dotenv import load_dotenv
 import os
 
@@ -11,7 +11,7 @@ api_instance=sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(conf
 
 def send_login_credentials(first_name, last_name, email, password):
     subject="Login credentials"
-    sender={"name": app.config["SENDER_NAME"], "email": app.config["SENDER_EMAIL"]}
+    sender={"name": app.app.config["SENDER_NAME"], "email": app.app.config["SENDER_EMAIL"]}
     email_content=f"""
     <p>Dear {first_name} {last_name},</p>
     <p>Your Rent Hive Rental Management System account has been created successfully.</p>
