@@ -24,9 +24,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
 # Email sender configuration
 app.config["SENDER_NAME"] = "Rent Hive Rental Management System"
 app.config["SENDER_EMAIL"] = "rms@rent-hive.co.ke"
-app.static_folder = 'static'
-# Configuring redis
 
+# Configuring redis
 r = redis.from_url("rediss://red-cs2f4956l47c73bgt4c0:vfHKfN8YalQnHnhGXV01tooGpCe8ugtf@oregon-redis.render.com:6379")
 app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
 app.config["SESSION_TYPE"] = "redis"
