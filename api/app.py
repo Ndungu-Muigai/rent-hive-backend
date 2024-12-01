@@ -105,13 +105,26 @@ class SignUp(Resource):
             db.session.add(new_user)
             db.session.commit()
 
-            #Returning the response
-            return make_response(jsonify(
-                {
-                    "type" : "success",
-                    "message" : "Account created successfully!"
-                }
-            ),200)
+            try:
+                #Sending the login credentials via email
+                send_login_credentials(first_name=first_name,last_name=last_name, email=email, password=password)
+
+                #Returning the response
+                return make_response(jsonify(
+                    {
+                        "type" : "success",
+                        "message" : "Account created successfully!"
+                    }
+                ),200)
+            
+            except Exception as e:
+                print(f"Email error: {e}")
+                db.session.rollback()
+                return make_response(jsonify(
+                    {
+                    "type": "error",
+                    "message": "Account created but failed to send email. Please check your email settings."
+                }), 500)
             
         except Exception as e:
             print(e)
