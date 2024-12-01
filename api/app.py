@@ -11,7 +11,7 @@ import json
 import hashlib
 import uuid
 
-from api.models import db, Users
+from api.models import db, Users, Properties, Images, Leases, Invoices, Payments
 from Mail.credentials import send_login_credentials
 
 app = Flask(__name__)
@@ -76,64 +76,57 @@ class SignUp(Resource):
         role=request.json["role"]
         password=request.json["password"]
         confirm_password=request.json["confirm_password"]
-        
+
         #Checking if an account exists with the given email
         if Users.query.filter_by(email=email).first():
+            print("An account with the given email already exists")
             return make_response(jsonify(
                 {
                     "type":"error",
                     "message" : "An account with the given email already exists"
                 }), 409)
         
-        #Checking if the two passwords given match
+        #Checking if the two passwords match
         if password != confirm_password:
+            print("Passwords do not match")
             return make_response(jsonify(
                 {
                     "type":"error",
-                    "message" : "The two passwords do not match"
+                    "message" : "Passwords do not match"
                 }
-            ), 400)
-        
+            ))
         #Adding the details to the database
         try:
             #Creating a hashed password to be saved in the database
             hashed_password=hashlib.md5(password.encode("utf-8")).hexdigest()
 
-            #Saving the info in the database
+            #Saving the info to the database
             new_user=Users(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, role=role, password=hashed_password)
+
+            #Sending the login credentials via email
+            send_login_credentials(first_name=first_name,last_name=last_name, email=email, password=password)
+
             db.session.add(new_user)
             db.session.commit()
 
-            print(new_user.email)
-
-            try:
-                send_login_credentials(first_name=first_name,last_name=last_name, email=email, password=password)
-                #Returning the response
-                return make_response(jsonify(
-                    {
-                        "type" : "success",
-                        "message" : "Account created successfully!"
-                    }
-                ))
-            except Exception as e:
-                print(f"Email error: {e}")
-                db.session.rollback()
-                return make_response(jsonify(
-                    {
-                    "type": "error",
-                    "message": "Account created but failed to send email. Please check your email settings."
-                }), 500)
-
-        except:
+            #Returning the response
+            return make_response(jsonify(
+                {
+                    "type" : "success",
+                    "message" : "Account created successfully!"
+                }
+            ),200)
+            
+        except Exception as e:
+            print(e)
             #Rolling back the database changes
             db.session.rollback()
-
             return make_response(jsonify(
                 {
                     "type": "error",
                     "message": "An error occured while creating your account. Please try again later!"
                 }
-            ), 400)
+            ),400)
         
 api.add_resource(SignUp, "/sign-up")
 
