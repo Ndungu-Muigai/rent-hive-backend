@@ -103,9 +103,6 @@ class SignUp(Resource):
             #Saving the info to the database
             new_user=Users(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, role=role, password=hashed_password)
 
-            #Sending the login credentials via email
-            send_login_credentials(first_name=first_name,last_name=last_name, email=email, password=password)
-
             db.session.add(new_user)
             db.session.commit()
 
