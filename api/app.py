@@ -19,7 +19,7 @@ app = Flask(__name__)
 # Configuring the database
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://rent-hive_owner:B6NLrdgAWsX0@ep-plain-dust-a5yn6z7p.us-east-2.aws.neon.tech/rent-hive?sslmode=require"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
 
 # Email sender configuration
 app.config["SENDER_NAME"] = "Rent Hive Rental Management System"
