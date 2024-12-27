@@ -48,16 +48,19 @@ CORS(app, origins=["http://localhost:3000", "https://rent-hive.vercel.app"])
 
 # Function to extract session data
 def get_session_data():
+    if request.path == "/logout":
+        return None  # Skip validation for logout
+    
     session_id = request.headers.get("X-Session-ID")
 
     if not session_id:
         raise ValueError("Session ID is missing from the request headers.")
-
+    
     session_data = r.get(f"session:{session_id}")
 
     if not session_data:
         raise ValueError("Invalid or expired session. Kindly login to continue.")
-
+    
     return json.loads(session_data)
 
 class Index(Resource):
