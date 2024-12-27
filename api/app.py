@@ -185,6 +185,7 @@ class Login(Resource):
         return make_response(jsonify(
             {
                 "type" : "success",
+                "session_id": session_id,
                 "message" : "Login successful"
             }
         ),200)
