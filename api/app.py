@@ -46,16 +46,19 @@ Session(app)
 #Configuring CORS
 CORS(app, origins=["http://localhost:3000", "https://rent-hive.vercel.app"])
 
-#Function to extract session data
+# Function to extract session data
 def get_session_data():
-    session_id=request.headers.get("X-Session-ID")
+    session_id = request.headers.get("X-Session-ID")
 
-    session_data=r.get(f"session:{session_id}")
+    if not session_id:
+        raise ValueError("Session ID is missing from the request headers.")
+
+    session_data = r.get(f"session:{session_id}")
 
     if not session_data:
-        return make_response(jsonify({"error": "Kindly login to continue"}))
+        raise ValueError("Invalid or expired session. Kindly login to continue.")
 
-    return json.loads(session_data) 
+    return json.loads(session_data)
 
 class Index(Resource):
     def get(self):
