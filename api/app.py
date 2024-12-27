@@ -93,7 +93,7 @@ class SignUp(Resource):
                     "type":"error",
                     "message" : "Passwords do not match"
                 }
-            ))
+            ),409)
         #Adding the details to the database
         try:
             #Creating a hashed password to be saved in the database
@@ -171,7 +171,8 @@ class Login(Resource):
         # Storing session information in Redis with a unique key
         session_data={
             "user_id": user.id,
-            "user_email" : user.email
+            "user_email" : user.email,
+            "user_role" : user.role
         }
 
         # Set the session data in Redis with the unique session ID
@@ -183,9 +184,31 @@ class Login(Resource):
                 "type" : "success",
                 "message" : "Login successful"
             }
-        ))
+        ),200)
 
 api.add_resource(Login, "/login")
+
+class Dashboard(Resource):
+    def get(self):
+        #Getting the session ID from the frontend
+        session_data=get_session_data()
+
+        #Extracting the data
+        user_id=session_data["user_id"]
+        user_role=session_data["user_role"]
+
+        #Getting the user's full name
+        user=Users.query.filter_by(id=user_id).first()
+
+        #Returning a response to the frontend
+        return make_response(jsonify(
+            {
+                "type" : "success",
+                "role": user_role,
+                "fullName" : user.full_name()
+            }),200)
+    
+api.add_resource(Dashboard, "/dashboard")
 
 if __name__=="__main__":
     app.run(port=5555, debug=True)
