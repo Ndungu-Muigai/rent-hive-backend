@@ -220,16 +220,20 @@ api.add_resource(Dashboard, "/dashboard")
 #Logout resource
 class Logout(Resource):
     def post(self):
-        session_id = request.headers.get('X-Session-ID')
-        if session_id:
-            r.delete(f"session:{session_id}")
-        #Return a response
-        return make_response(jsonify(
+        try:
+            session_id = request.headers.get("X-Session-ID")
+            if session_id:
+                r.delete(f"session:{session_id}")  # Explicitly clear Redis session
+            return make_response(jsonify(
             {
-                "type" : "success",
-                "message": "Logged out successfully"
+                "type": "success",
+                "message": "Logged out successfully."
             }), 200)
-    
+        except Exception as e:
+            return make_response(jsonify({
+                "type": "error",
+                "message": str(e)
+            }), 500)
 api.add_resource(Logout, "/logout")
 
 if __name__=="__main__":
