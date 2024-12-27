@@ -221,7 +221,11 @@ class Logout(Resource):
         if session_id:
             r.delete(f"session:{session_id}")
         #Return a response
-        return make_response(jsonify({"success": "Logged out successfully"}), 200)
+        return make_response(jsonify(
+            {
+                "type" : "success",
+                "message": "Logged out successfully"
+            }), 200)
     
 api.add_resource(Logout, "/logout")
 
