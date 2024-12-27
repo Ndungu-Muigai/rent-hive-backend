@@ -214,5 +214,16 @@ class Dashboard(Resource):
     
 api.add_resource(Dashboard, "/dashboard")
 
+#Logout resource
+class Logout(Resource):
+    def post(self):
+        session_id = request.headers.get('X-Session-ID')
+        if session_id:
+            r.delete(f"session:{session_id}")
+        #Return a response
+        return make_response(jsonify({"success": "Logged out successfully"}), 200)
+    
+api.add_resource(Logout, "/logout")
+
 if __name__=="__main__":
     app.run(port=5555, debug=True)
