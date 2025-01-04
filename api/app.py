@@ -289,8 +289,6 @@ class Property(Resource):
         rent = request.form.get("rent")
         images = request.files.getlist("images[]")  # Get a list of images
 
-        print("Images:", images)
-
         # Checking if the property already exists in the database
         property = Properties.query.filter_by(name=name).first()
 
@@ -315,9 +313,6 @@ class Property(Resource):
 
                 # Setting the path to the images folder in the S3 bucket
                 s3_path = f"images/{unique_image_name}"
-
-                print(s3_path)
-                print(S3_BUCKET_NAME)
 
                 try:
                     # Uploading the image to the S3 bucket
