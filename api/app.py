@@ -294,6 +294,7 @@ class Property(Resource):
         print(property_type)
         print(location)
         print(rent)
+        print(images)
 
         # Checking if the property already exists in the database
         property = Properties.query.filter_by(name=name).first()
