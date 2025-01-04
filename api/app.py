@@ -264,14 +264,13 @@ class Property(Resource):
         }),200)
     
     def post(self):
-
-        #Getting the data from the front end
-        name=request.form.get("name")
-        description=request.form.get("description")
-        property_type=request.form.get("property_type")
-        location=request.form.get("location")
-        rent=request.form.get("rent")
-        images=request.files.get("images")
+        # Getting the data from the front end
+        name = request.form.get("name")
+        description = request.form.get("description")
+        property_type = request.form.get("property_type")
+        location = request.form.get("location")
+        rent = request.form.get("rent")
+        images = request.files.getlist("images")  # Get a list of images
 
         print(name)
         print(description)
@@ -279,56 +278,58 @@ class Property(Resource):
         print(location)
         print(rent)
 
-        #Checking if the property already exists in the database
-        property=Properties.query.filter_by(name=name).first()
+        # Checking if the property already exists in the database
+        property = Properties.query.filter_by(name=name).first()
 
         if property:
             return make_response(jsonify(
-            {
-                "type": "error",
-                "message": "Property already exists"
-            }),409)
-        
-        #If it doesn't exist, add it to the database
-        new_property=Properties(name=name, property_type=property_type, description=description, location=location, rent=rent)
+                {
+                    "type": "error",
+                    "message": "Property already exists"
+                }), 409)
 
-        db.session.add(new_property)
-        db.session.commit()
+        try:
+            # If it doesn't exist, add it to the database
+            new_property = Properties(name=name, property_type=property_type, description=description, location=location, rent=rent)
+            db.session.add(new_property)
+            db.session.commit()
 
-        for image in images:
-            #Getting the image file name
-            image_name=secure_filename(image.filename)
-            #Generating a unique ID for each image
-            unique_image_name=str(uuid.uuid1()) + "_" + image_name
+            # Iterate over each image
+            for image in images:
+                # Getting the image file name
+                image_name = secure_filename(image.filename)
+                # Generating a unique ID for each image
+                unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
-            #Setting the path to the images folder in the S3 bucket
-            s3_path=f"images/{unique_image_name}"
+                # Setting the path to the images folder in the S3 bucket
+                s3_path = f"images/{unique_image_name}"
 
-            try:
-                #Uploading the images to the S3 bucket
+                # Uploading the image to the S3 bucket
                 s3.upload_fileobj(image, "images", s3_path)
 
-                #Adding the image to the database
-                new_image=Images(property_id=new_property.id, image_path=s3_path)
+                # Adding the image to the database
+                new_image = Images(property_id=new_property.id, image_path=s3_path)
                 db.session.add(new_image)
-                db.session.commit()
 
-                #Returning a response to the frontend
-                return make_response(jsonify(
-                    {
-                        "type": "success",
-                        "message": "Property added successfully!"
-                    }),200)
+            # Commit all changes after processing all images
+            db.session.commit()
 
-            except Exception as e:
-                print(e)
-                #Rolling back the database changes
-                db.session.rollback()
-                return make_response(jsonify(
-                    {
-                        "type": "error",
-                        "message": "Error uploading images. Please try again later!"
-                    }), 409)
+            # Returning a response to the frontend
+            return make_response(jsonify(
+                {
+                    "type": "success",
+                    "message": "Property added successfully!"
+                }), 200)
+
+        except Exception as e:
+            print(e)
+            # Rolling back the database changes
+            db.session.rollback()
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "message": "Error uploading images. Please try again later!"
+                }), 409)
             
 api.add_resource(Property, "/properties")
 
