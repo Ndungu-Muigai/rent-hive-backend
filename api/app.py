@@ -265,22 +265,22 @@ class Property(Resource):
     
     def post(self):
 
-        #Getting the session ID from the frontend
-        session_data=get_session_data()
+        # Getting the session ID from the frontend
+        session_data = get_session_data()
 
-        #Extracting the user ID and role
-        user_id=session_data["user_id"]
-        user_role=session_data["user_role"]
+        # Extracting the user ID and role
+        user_id = session_data["user_id"]
+        user_role = session_data["user_role"]
 
-        #If the role is not an owner, return an error
+        # If the role is not an owner, return an error
         if user_role != "Owner":
             return make_response(jsonify(
                 {
-                    "type" : "error",
-                    "message" : "You are not an owner"
+                    "type": "error",
+                    "message": "You are not an owner"
                 }
-            ),409)
-        
+            ), 409)
+
         # Getting the data from the front end
         name = request.form.get("name")
         description = request.form.get("description")
@@ -302,12 +302,11 @@ class Property(Resource):
                 }), 409)
 
         try:
-            # If it doesn't exist, add it to the database
+            # Create a new property but do not commit yet
             new_property = Properties(name=name, property_type=property_type, description=description, location=location, rent=rent, owner_id=user_id)
             db.session.add(new_property)
-            db.session.commit()
 
-            # Iterate over each image
+            # Iterate over each image and upload it to S3
             for image in images:
                 # Getting the image file name
                 image_name = secure_filename(image.filename)
@@ -317,14 +316,24 @@ class Property(Resource):
                 # Setting the path to the images folder in the S3 bucket
                 s3_path = f"images/{unique_image_name}"
 
-                # Uploading the image to the S3 bucket
-                s3.upload_fileobj(image, "images", s3_path)
+                try:
+                    # Uploading the image to the S3 bucket
+                    s3.upload_fileobj(image, "images", s3_path)
 
-                # Adding the image to the database
-                new_image = Images(property_id=new_property.id, image_path=s3_path)
-                db.session.add(new_image)
+                    # Add the image to the database if upload is successful
+                    new_image = Images(property_id=new_property.id, image_path=s3_path)
+                    db.session.add(new_image)
+                except Exception as e:
+                    print(f"Error uploading image {image_name}: {e}")
+                    # If any image upload fails, rollback the entire transaction
+                    db.session.rollback()
+                    return make_response(jsonify(
+                        {
+                            "type": "error",
+                            "message": "Error uploading images. Please try again later!"
+                        }), 409)
 
-            # Commit all changes after processing all images
+            # Commit the property and images to the database after all images are successfully uploaded
             db.session.commit()
 
             # Returning a response to the frontend
@@ -335,14 +344,15 @@ class Property(Resource):
                 }), 200)
 
         except Exception as e:
-            print(e)
-            # Rolling back the database changes
+            print(f"Error processing property: {e}")
+            # If there's any error during property creation, rollback the entire transaction
             db.session.rollback()
             return make_response(jsonify(
                 {
                     "type": "error",
-                    "message": "Error uploading images. Please try again later!"
+                    "message": "Error processing property. Please try again later!"
                 }), 409)
+
             
 api.add_resource(Property, "/properties")
 
