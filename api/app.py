@@ -266,11 +266,11 @@ class Property(Resource):
     def post(self):
 
         #Getting the data from the front end
-        name=request.json["name"]
-        description=request.json["description"]
-        property_type=request.json["property_type"]
-        location=request.json["location"]
-        rent=request.json["rent"]
+        name=request.form.get("name")
+        description=request.form.get("description")
+        property_type=request.form.get("property_type")
+        location=request.form.get("location")
+        rent=request.form.get("rent")
         images=request.files.get("images")
 
         print(name)
