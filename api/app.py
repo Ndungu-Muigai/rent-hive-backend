@@ -330,7 +330,7 @@ class Property(Resource):
                         "message": "Error uploading images. Please try again later!"
                     }), 409)
             
-api.add_resource(Properties, "/properties")
+api.add_resource(Property, "/properties")
 
 #Logout resource
 class Logout(Resource):
