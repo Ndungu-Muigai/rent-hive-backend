@@ -4,13 +4,16 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_session import Session
 from datetime import timedelta
+from werkzeug.utils import secure_filename
 
+import boto3
 import os
 import redis 
 import json
 import hashlib
 import uuid
 
+from schema import UserSchema, PropertySchema, ImageSchema
 from api.models import db, Users, Properties, Images, Leases, Invoices, Payments
 from Mail.credentials import send_login_credentials
 
@@ -32,6 +35,14 @@ app.config["SESSION_TYPE"] = "redis"
 app.config['SESSION_REDIS'] = r
 app.config['SESSION_PERMANENT'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+
+# AWS S3 configuration
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+S3_REGION = os.getenv("S3_REGION")
+S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY")
+S3_SECRET_ACCESS_KEY = os.getenv("S3_SECRET_ACCESS_KEY")
+
+s3 = boto3.client("s3", region_name=S3_REGION, aws_access_key_id=S3_ACCESS_KEY, aws_secret_access_key=S3_SECRET_ACCESS_KEY)
 
 #Initializing the migration
 migrate=Migrate(app, db)
@@ -216,6 +227,110 @@ class Dashboard(Resource):
             }),200)
     
 api.add_resource(Dashboard, "/dashboard")
+
+#Property resource
+class Property(Resource):
+    def get(self):
+        #Getting the session ID from the frontend
+        session_data=get_session_data()
+
+        #Extracting the user ID and role
+        user_id=session_data["user_id"]
+        user_role=session_data["user_role"]
+
+        #If the role is not an owner, return an error
+        if user_role != "owner":
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "You are not an owner"
+                }
+            ),409)
+        
+        #Getting the properties of the said owner
+        properties=Properties.query.filter_by(owner_id=user_id).all()
+        print(properties)
+
+        #Creating a schema for the properties
+        property_schema=PropertySchema().dump(properties, many=True)
+
+        print(property_schema)
+
+        #Returning a response to the front end
+        return make_response(jsonify(
+        {
+            "type" : "success",
+            "properties" : property_schema
+        }),200)
+    
+    def post(self):
+
+        #Getting the data from the front end
+        name=request.json["name"]
+        description=request.json["description"]
+        property_type=request.json["property_type"]
+        location=request.json["location"]
+        rent=request.json["rent"]
+        images=request.files.get("images")
+
+        print(name)
+        print(description)
+        print(property_type)
+        print(location)
+        print(rent)
+
+        #Checking if the property already exists in the database
+        property=Properties.query.filter_by(name=name).first()
+
+        if property:
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "message": "Property already exists"
+            }),409)
+        
+        #If it doesn't exist, add it to the database
+        new_property=Properties(name=name, property_type=property_type, description=description, location=location, rent=rent)
+
+        db.session.add(new_property)
+        db.session.commit()
+
+        for image in images:
+            #Getting the image file name
+            image_name=secure_filename(image.filename)
+            #Generating a unique ID for each image
+            unique_image_name=str(uuid.uuid1()) + "_" + image_name
+
+            #Setting the path to the images folder in the S3 bucket
+            s3_path=f"images/{unique_image_name}"
+
+            try:
+                #Uploading the images to the S3 bucket
+                s3.upload_fileobj(image, "images", s3_path)
+
+                #Adding the image to the database
+                new_image=Images(property_id=new_property.id, image_path=s3_path)
+                db.session.add(new_image)
+                db.session.commit()
+
+                #Returning a response to the frontend
+                return make_response(jsonify(
+                    {
+                        "type": "success",
+                        "message": "Property added successfully!"
+                    }),200)
+
+            except Exception as e:
+                print(e)
+                #Rolling back the database changes
+                db.session.rollback()
+                return make_response(jsonify(
+                    {
+                        "type": "error",
+                        "message": "Error uploading images. Please try again later!"
+                    }), 409)
+            
+api.add_resource(Properties, "/properties")
 
 #Logout resource
 class Logout(Resource):

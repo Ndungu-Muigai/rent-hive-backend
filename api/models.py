@@ -32,9 +32,10 @@ class Properties(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     name=db.Column(db.String, nullable=False)
     description=db.Column(db.String, nullable=False)
-    property_status=db.Column(db.String, nullable=False)
+    property_status=db.Column(db.Enum("Available", "Leased"), name="property_status_enum" ,nullable=False, default="Available")
     property_type=db.Column(db.String, nullable=False)
     location=db.Column(db.String, nullable=False)
+    rent=db.Column(db.Integer, nullable=False)
     owner_id=db.Column(db.Integer, db.ForeignKey('users.id'))
     tenant_id=db.Column(db.Integer, db.ForeignKey('users.id'))
 
