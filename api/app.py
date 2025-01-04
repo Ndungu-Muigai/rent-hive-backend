@@ -287,9 +287,9 @@ class Property(Resource):
         property_type = request.form.get("property_type")
         location = request.form.get("location")
         rent = request.form.get("rent")
-        images = request.files.getlist("images")  # Get a list of images
+        images = request.files.getlist("images[]")  # Get a list of images
 
-        print("Files:", request.files)
+        print("Images:", images)
 
         # Checking if the property already exists in the database
         property = Properties.query.filter_by(name=name).first()
