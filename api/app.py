@@ -273,7 +273,7 @@ class Property(Resource):
         user_role=session_data["user_role"]
 
         #If the role is not an owner, return an error
-        if user_role != "owner":
+        if user_role != "Owner":
             return make_response(jsonify(
                 {
                     "type" : "error",
