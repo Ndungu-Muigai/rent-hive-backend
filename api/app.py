@@ -264,6 +264,23 @@ class Property(Resource):
         }),200)
     
     def post(self):
+
+        #Getting the session ID from the frontend
+        session_data=get_session_data()
+
+        #Extracting the user ID and role
+        user_id=session_data["user_id"]
+        user_role=session_data["user_role"]
+
+        #If the role is not an owner, return an error
+        if user_role != "owner":
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "You are not an owner"
+                }
+            ),409)
+        
         # Getting the data from the front end
         name = request.form.get("name")
         description = request.form.get("description")
@@ -290,7 +307,7 @@ class Property(Resource):
 
         try:
             # If it doesn't exist, add it to the database
-            new_property = Properties(name=name, property_type=property_type, description=description, location=location, rent=rent)
+            new_property = Properties(name=name, property_type=property_type, description=description, location=location, rent=rent, owner_id=user_id)
             db.session.add(new_property)
             db.session.commit()
 
