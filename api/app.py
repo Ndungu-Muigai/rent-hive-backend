@@ -253,7 +253,7 @@ class Property(Resource):
         print(properties)
 
         #Creating a schema for the properties
-        property_schema=PropertySchema().dump(properties, many=True)
+        property_schema=PropertySchema(many=True).dump(properties)
 
         print(property_schema)
 
