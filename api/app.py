@@ -319,7 +319,7 @@ class Property(Resource):
                     s3.upload_fileobj(image, S3_BUCKET_NAME, s3_path)
 
                     # Add the image to the database if upload is successful
-                    new_image = Images(property_id=new_property.id, image_path=s3_path)
+                    new_image = Images(property_id=new_property.id, image_url=s3_path)
                     db.session.add(new_image)
                 except Exception as e:
                     print(f"Error uploading image {image_name}: {e}")
@@ -351,7 +351,6 @@ class Property(Resource):
                     "message": "Error processing property. Please try again later!"
                 }), 409)
 
-            
 api.add_resource(Property, "/properties")
 
 #Logout resource
