@@ -220,7 +220,7 @@ class Dashboard(Resource):
 
         #Getting the number of properties the owner has
         if user_role == "Owner":
-            properties=Properties.query.filter_by(user_id=user_id).count()
+            properties=Properties.query.filter_by(owner_id=user_id).count()
 
         #Returning a response to the frontend
         return make_response(jsonify(
