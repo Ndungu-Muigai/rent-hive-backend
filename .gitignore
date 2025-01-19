@@ -11,3 +11,6 @@
 
 # Ignore environment file
 .env
+
+#Ignoring te txt file
+.txt
