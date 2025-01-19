@@ -316,7 +316,7 @@ class Property(Resource):
 
                 try:
                     # Uploading the image to the S3 bucket
-                    s3.upload_fileobj(image, "images", s3_path)
+                    s3.upload_fileobj(image, "products", s3_path)
 
                     # Add the image to the database if upload is successful
                     new_image = Images(property_id=new_property.id, image_path=s3_path)
