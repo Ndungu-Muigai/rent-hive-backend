@@ -20,4 +20,4 @@ class PropertySchema(Schema):
     property_type=fields.Str(required=True)
     location=fields.Str(required=True)
     rent=fields.Float(required=True)
-    images=fields.List(fields.Nested(ImageSchema))
+    images=fields.List(fields.Nested(ImageSchema(only=("id", "image_url"))))
