@@ -312,7 +312,7 @@ class Property(Resource):
                 unique_image_name = str(uuid.uuid1()) + "_" + image_name
 
                 # Setting the path to the images folder in the S3 bucket
-                s3_path = f"images/{unique_image_name}"
+                s3_path = f"products/{unique_image_name}"
 
                 try:
                     # Uploading the image to the S3 bucket
