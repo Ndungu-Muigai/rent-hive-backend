@@ -303,6 +303,7 @@ class Property(Resource):
             # Create a new property but do not commit yet
             new_property = Properties(name=name, property_type=property_type, description=description, location=location, rent=rent, owner_id=user_id)
             db.session.add(new_property)
+            db.session.commit()
 
             # Iterate over each image and upload it to S3
             for image in images:
@@ -331,7 +332,7 @@ class Property(Resource):
                             "message": "Error uploading images. Please try again later!"
                         }), 409)
 
-            # Commit the property and images to the database after all images are successfully uploaded
+            # Commit the images to the database after all images are successfully uploaded
             db.session.commit()
 
             # Returning a response to the frontend
