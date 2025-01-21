@@ -218,18 +218,25 @@ class Dashboard(Resource):
         #Getting the user's full name
         user=Users.query.filter_by(id=user_id).first()
 
+        #Creating a response dictionary
+        response={
+            "fullName": user.full_name(),
+            "role": user_role
+        }
+
         #Getting the number of properties the owner has
         if user_role == "Owner":
             properties=Properties.query.filter_by(owner_id=user_id).count()
 
-        #Returning a response to the frontend
-        return make_response(jsonify(
-            {
-                "type" : "success",
-                "role": user_role,
-                "fullName" : user.full_name(),
-                "properties": properties
-            }),200)
+            #Adding to the response array
+            response["type"]="success"
+            response["properties"]=properties
+        
+        else:
+            #Adding to the response array
+            response["type"]="success"
+        
+        return make_response(jsonify(response),200)
     
 api.add_resource(Dashboard, "/dashboard")
 
