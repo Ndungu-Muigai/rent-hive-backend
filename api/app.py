@@ -399,6 +399,53 @@ class AvailableProperties(Resource):
 
 api.add_resource(AvailableProperties, "/available-properties")
 
+#Getting the available properties by ID
+class AvailablePropertiesByID(Resource):
+    def get(self, id):
+
+        #Getting the session ID from the frontend
+        session_data=get_session_data()
+
+        # Extracting the user ID and role
+        user_role = session_data["user_role"]
+
+        # If the role is not a tenant, return an error
+        if user_role != "Tenant":
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "reason": "Invalid credentials",
+                    "message": "You are not a tenant"
+                }
+            ), 409)
+
+        #Getting the individual property by ID
+        property = Properties.query.filter_by(property_id=id).first()
+
+        #If property doesn't exist, return an error
+        if property is None:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "reason" : "Not found",
+                    "message" : "Property doesn't exist!"
+                }
+            ),404)
+
+        #Creating the property schema
+        property_schema=PropertySchema().dump(property)
+
+        #Returning the response to the frontend
+        return make_response(jsonify(
+            {
+                "type" : "success",
+                "property" : property_schema
+            }
+        ), 200)
+
+api.add_resource(AvailablePropertiesByID, "/available-properties/<int:id>")
+
+
 #Logout resource
 class Logout(Resource):
     def post(self):
