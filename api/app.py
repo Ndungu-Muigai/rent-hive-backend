@@ -390,9 +390,6 @@ class AvailableProperties(Resource):
         #Creating a schema for the properties
         property_schema=PropertySchema(many=True).dump(available_properties)
 
-        print(property_schema)
-        print(available_properties)
-
         #Returning a response to the front end
         return make_response(jsonify(
         {
