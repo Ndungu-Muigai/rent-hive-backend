@@ -262,12 +262,9 @@ class Property(Resource):
         
         #Getting the properties of the said owner
         properties=Properties.query.filter_by(owner_id=user_id).all()
-        print(properties)
 
         #Creating a schema for the properties
         property_schema=PropertySchema(many=True).dump(properties)
-
-        print(property_schema)
 
         #Returning a response to the front end
         return make_response(jsonify(
@@ -366,6 +363,41 @@ class Property(Resource):
                 }), 409)
 
 api.add_resource(Property, "/properties")
+
+#Getting all available properties for the tenants
+class AvailableProperties(Resource):
+    def get(self):
+
+        #Getting the session ID from the frontend
+        session_data=get_session_data()
+
+        # Extracting the user ID and role
+        user_role = session_data["user_role"]
+
+        # If the role is not a tenant, return an error
+        if user_role != "Tenant":
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "reason": "Invalid credentials",
+                    "message": "You are not a tenant"
+                }
+            ), 409)
+
+        #Getting the list of available properties
+        available_properties = Property.query.filter_by(property_status="Available").all()
+
+        #Creating a schema for the properties
+        property_schema=PropertySchema(many=True).dump(available_properties)
+
+        #Returning a response to the front end
+        return make_response(jsonify(
+        {
+            "type" : "success",
+            "properties" : property_schema
+        }),200)
+
+api.add_resource(AvailableProperties, "/available-properties")
 
 #Logout resource
 class Logout(Resource):
