@@ -420,7 +420,7 @@ class AvailablePropertiesByID(Resource):
             ), 409)
 
         #Getting the individual property by ID
-        property = Properties.query.filter_by(property_id=id).first()
+        property = Properties.query.filter_by(id=id).first()
 
         #If property doesn't exist, return an error
         if property is None:
