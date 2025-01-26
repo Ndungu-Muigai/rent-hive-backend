@@ -445,6 +445,12 @@ class AvailablePropertiesByID(Resource):
 
 api.add_resource(AvailablePropertiesByID, "/available-properties/<int:id>")
 
+#Creating a lease
+class Lease(Resource):
+    def post(self):
+        pass
+
+api.add_resource(Lease, "/lease")
 
 #Logout resource
 class Logout(Resource):
