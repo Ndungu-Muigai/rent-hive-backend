@@ -36,7 +36,7 @@ class Properties(db.Model):
     property_type=db.Column(db.String, nullable=False)
     location=db.Column(db.String, nullable=False)
     rent=db.Column(db.Integer, nullable=False)
-    deposit_required=db.Column(db.Boolean, nullable=False)
+    deposit_required=db.Column(db.Boolean, nullable=False, default=False)
     owner_id=db.Column(db.Integer, db.ForeignKey('users.id'))
     tenant_id=db.Column(db.Integer, db.ForeignKey('users.id'))
 

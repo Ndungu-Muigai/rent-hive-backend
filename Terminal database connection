@@ -1,1 +1,1 @@
-psql postgresql://rent-hive_owner:MZCvkzY6OjB5@ep-noisy-band-a58b5fuk.us-east-2.aws.neon.tech/rent-hive?sslmode=require
+psql 'postgresql://neondb_owner:npg_SgGj8Xiz6sCV@ep-lively-art-a56ebgmj-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require'
