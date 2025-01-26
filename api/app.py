@@ -319,7 +319,7 @@ class Property(Resource):
                 deposit = False
 
             # Create a new property but do not commit yet
-            new_property = Properties(name=name, property_type=property_type, description=description, location=location, rent=rent, owner_id=user_id, deposit=deposit)
+            new_property = Properties(name=name, property_type=property_type, description=description, location=location, rent=rent, owner_id=user_id, deposit_required=deposit)
             db.session.add(new_property)
             db.session.commit()
 
