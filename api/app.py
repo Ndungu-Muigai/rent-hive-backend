@@ -447,7 +447,7 @@ class AvailablePropertiesByID(Resource):
         owner = Users.query.filter_by(id=property.owner_id).first()
 
         #Creating a schema of the owner
-        owner_schema=UserSchema(only=("first_name", "last_name", "email", "phone")).dump(owner)
+        owner_schema=UserSchema(only=("first_name", "last_name", "email", "phone_number")).dump(owner)
 
         #Returning the response to the frontend
         return make_response(jsonify(
