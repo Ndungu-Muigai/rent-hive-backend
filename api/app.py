@@ -298,6 +298,7 @@ class Property(Resource):
         location = request.form.get("location")
         rent = request.form.get("rent")
         images = request.files.getlist("images[]")  # Get a list of images
+        deposit = request.form.get("deposit")
 
         # Checking if the property already exists in the database
         property = Properties.query.filter_by(name=name).first()
@@ -310,8 +311,15 @@ class Property(Resource):
                 }), 409)
 
         try:
+            #Saving the deposit as a Boolean based on the form input
+            if deposit == "Yes":
+                deposit = True
+            
+            elif deposit == "No":
+                deposit = False
+
             # Create a new property but do not commit yet
-            new_property = Properties(name=name, property_type=property_type, description=description, location=location, rent=rent, owner_id=user_id)
+            new_property = Properties(name=name, property_type=property_type, description=description, location=location, rent=rent, owner_id=user_id, deposit=deposit)
             db.session.add(new_property)
             db.session.commit()
 
