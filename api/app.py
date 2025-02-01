@@ -499,7 +499,7 @@ class Lease(Resource):
 
             # Update property status
             property.tenant_id = user_id
-            property.property_status = "Rented"
+            property.property_status = "Leased"
             db.session.commit()
 
             # Create invoice if deposit is required
