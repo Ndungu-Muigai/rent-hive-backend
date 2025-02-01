@@ -70,7 +70,7 @@ class Invoices(db.Model):
 
     __tablename__ = "invoices"
 
-    ref_no = db.Column(db.String, primary_key=True, default=lambda: f"INV{next(invoice_ref_seq):04d}")
+    ref_no = db.Column(db.String, primary_key=True,server_default=invoice_ref_seq.next_value())
     amount=db.Column(db.Float, nullable=False)
     invoice_date=db.Column(db.DateTime, nullable=False)
     due_date=db.Column(db.DateTime, nullable=False)
