@@ -515,13 +515,14 @@ class Lease(Resource):
                 }
             ),200)
 
-        except:
+        except Exception as e:
+            print(e)
             return make_response(jsonify(
                 {
                     "type": "error",
                     "message" : "Error when creating the lease. Please try again later"
                 }
-            ),400)
+            ),500)
 
 api.add_resource(Lease, "/lease")
 
