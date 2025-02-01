@@ -1,5 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Sequence
+from sqlalchemy import event
+from sqlalchemy.orm import validates
+from datetime import datetime
+import psycopg2
 
 db=SQLAlchemy()
 
@@ -64,24 +67,40 @@ class Leases(db.Model):
     tenant_id=db.Column(db.Integer, db.ForeignKey('users.id'))
     property_id=db.Column(db.Integer, db.ForeignKey('properties.id'))
 
-invoice_ref_seq = Sequence('invoice_ref_seq')
 
 class Invoices(db.Model):
 
     __tablename__ = "invoices"
 
-    ref_no = db.Column(db.String, primary_key=True,server_default=invoice_ref_seq.next_value())
+    ref_no = db.Column(db.String, primary_key=True)
     amount=db.Column(db.Float, nullable=False)
     invoice_date=db.Column(db.DateTime, nullable=False)
     due_date=db.Column(db.DateTime, nullable=False)
     balance=db.Column(db.Float, nullable=True)
     description=db.Column(db.String, nullable=False)
-    property_id=db.Column(db.Integer, db.ForeignKey('properties.id'))
-    tenant_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    lease_id=db.Column(db.Integer, db.ForeignKey('leases.id'))
+    property_id=db.Column(db.Integer, db.ForeignKey('properties.id'), nullable=False)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    lease_id=db.Column(db.Integer, db.ForeignKey('leases.id'), nullable=False)
 
     payments=db.relationship("Payments", backref="invoice", uselist=True)
 
+#Function to generate the invoice no
+def generate_invoice_no():
+    last_invoice=db.session.query(Invoices).order_by(Invoices.ref_no.desc()).first()
+    if last_invoice:
+        last_ref_no=last_invoice.ref_no
+        last_number=int(last_ref_no[3:])
+        new_number = last_number + 1
+    else:
+        new_number=1
+
+    return f"INV{new_number:04}"
+
+#Listener for the Invoices model to automatically generate ref no before inserting the data
+@event.listens_for(Invoices, 'before_insert')
+def generate_ref_no(mapper, connection, target):
+    target.ref_no=generate_invoice_no()
+    
 class Payments(db.Model):
 
     __tablename__ = "payments"

@@ -503,7 +503,8 @@ class Lease(Resource):
             # Create invoice if deposit is required
             if deposit > 0:
                 new_invoice = Invoices(amount=deposit, invoice_date=datetime.utcnow(),
-                due_date=datetime.utcnow() + timedelta(days=30),balance=deposit, description=f"Rent deposit for property{property_id}",property_id=property_id, tenant_id=user_id,lease_id=new_lease.id)
+                due_date=datetime.utcnow() + timedelta(days=30),balance=deposit, description=f"Rent deposit for property {property_id}",property_id=property_id, tenant_id=user_id,lease_id=new_lease.id)
+
                 db.session.add(new_invoice)
                 db.session.commit()
 
