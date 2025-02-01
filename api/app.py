@@ -463,66 +463,65 @@ api.add_resource(AvailablePropertiesByID, "/available-properties/<int:id>")
 #Creating a lease
 class Lease(Resource):
     def post(self):
-        #Getting the session data of the currently logged in user
         session_data = get_session_data()
-
-        #Extracting the session data
         user_id = session_data["user_id"]
         user_role = session_data["user_role"]
 
-        # If the role is not a tenant, return an error
         if user_role != "Tenant":
-            return make_response(jsonify(
-                {
-                    "type": "error",
-                    "reason": "Invalid credentials",
-                    "message": "You are not a tenant"
-                }
-            ), 409)
+            return make_response(jsonify({
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You are not a tenant"
+            }), 409)
 
-        #Getting the data from the frontent
-        property_id=request.json["property_id"]
-        start_date=request.json["start_date"]
-        end_date=request.json["end_date"]
+        # Get request data
+        property_id = request.json.get("property_id")
+        start_date = request.json.get("start_date")
+        end_date = request.json.get("end_date")
 
-        #Getting the rent and deposit required based on the property
-        property=Properties.query.filter_by(id=property_id).first()
-        rent=property.rent
+        # Validate property
+        property = Properties.query.filter_by(id=property_id).first()
+        if not property:
+            return make_response(jsonify({
+                "type": "error",
+                "message": "Property not found"
+            }), 404)
 
-        #Initializing deposit
-        deposit=0
-
-        #Getting the deposit required based on the property
-        if property.deposit_required == True:
-            deposit=rent
+        rent = property.rent
+        deposit = rent if property.deposit_required else 0
 
         try:
-            #Creating a lease
-            new_lease=Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id)
+            # Create lease
+            new_lease = Leases(start_date=start_date, rent_amount=rent, 
+                               deposit_amount=deposit, property_id=property_id, 
+                               end_date=end_date, tenant_id=user_id)
             db.session.add(new_lease)
+
+            # Update property status
+            property.tenant_id = user_id
+            property.property_status = "Rented"
             db.session.commit()
 
-            #Creating an invoice if a deposit is required
-            if property.deposit_required == True:
-                new_invoice=Invoices(amount=deposit, invoice_date=datetime.utcnow(), due_date=datetime.utcnow() + timedelta(days=30), balance=deposit, descritpion=f"Rent deposit for property {property_id}", property_id=property_id,tenant_id=user_id, lease_id=new_lease.id)
+            # Create invoice if deposit is required
+            if deposit > 0:
+                new_invoice = Invoices(amount=deposit, invoice_date=datetime.utcnow(),
+                due_date=datetime.utcnow() + timedelta(days=30),balance=deposit, description=f"Rent deposit for property{property_id}",property_id=property_id, tenant_id=user_id,lease_id=new_lease.id)
                 db.session.add(new_invoice)
                 db.session.commit()
 
-            return make_response(jsonify(
-                {
-                    "type": "success",
-                    "message" : "Lease created successfully"
-                }
-            ),200)
+            return make_response(jsonify({
+                "type": "success",
+                "message": "Lease created successfully"
+            }), 200)
 
         except Exception as e:
-            print(e)
-            return make_response(jsonify(
-                {
-                    "type": "error",
-                    "message" : "Error when creating the lease. Please try again later"
-                }
-            ),500)
+            print("Error creating lease:", str(e))
+            db.session.rollback()  # Rollback changes on failure
+            return make_response(jsonify({
+                "type": "error",
+                "message": "Error when creating the lease. Please try again later",
+                "details": str(e)
+            }), 500)
 
 api.add_resource(Lease, "/lease")
 
