@@ -491,28 +491,30 @@ class Lease(Resource):
         deposit = rent if property.deposit_required else 0
 
         try:
-            # Create lease
-            new_lease = Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id)
-            db.session.add(new_lease)
+            #Starting a transaction
+            with db.session.begin():
+                # Create lease
+                new_lease = Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id)
+                db.session.add(new_lease)
 
-            # Update property status
-            property.tenant_id = user_id
-            property.property_status = "Leased"
-            db.session.commit()
-
-            # Create invoice if deposit is required
-            if deposit > 0:
-                new_invoice = Invoices(amount=deposit, invoice_date=datetime.utcnow(),
-                due_date=datetime.utcnow() + timedelta(days=30),balance=deposit, description=f"Rent deposit for property {property_id}",property_id=property_id, tenant_id=user_id,lease_id=new_lease.id)
-
-                db.session.add(new_invoice)
+                # Update property status
+                property.tenant_id = user_id
+                property.property_status = "Leased"
                 db.session.commit()
 
-            return make_response(jsonify(
-            {
-                "type": "success",
-                "message": "Lease created successfully"
-            }), 200)
+                # Create invoice if deposit is required
+                if deposit > 0:
+                    new_invoice = Invoices(amount=deposit, invoice_date=datetime.utcnow(),
+                    due_date=datetime.utcnow() + timedelta(days=30),balance=deposit, description=f"Rent deposit for property {property_id}",property_id=property_id, tenant_id=user_id,lease_id=new_lease.id)
+
+                    db.session.add(new_invoice)
+                    db.session.commit()
+
+                return make_response(jsonify(
+                {
+                    "type": "success",
+                    "message": "Lease created successfully"
+                }), 200)
 
         except Exception as e:
             print("Error creating lease:", str(e))
