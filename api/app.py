@@ -3,7 +3,7 @@ from flask_restful import Api, Resource
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_session import Session
-from datetime import timedelta
+from datetime import timedelta, datetime
 from werkzeug.utils import secure_filename
 
 import boto3
@@ -463,7 +463,65 @@ api.add_resource(AvailablePropertiesByID, "/available-properties/<int:id>")
 #Creating a lease
 class Lease(Resource):
     def post(self):
-        pass
+        #Getting the session data of the currently logged in user
+        session_data = get_session_data()
+
+        #Extracting the session data
+        user_id = session_data["user_id"]
+        user_role = session_data["user_role"]
+
+        # If the role is not a tenant, return an error
+        if user_role != "Tenant":
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "reason": "Invalid credentials",
+                    "message": "You are not a tenant"
+                }
+            ), 409)
+
+        #Getting the data from the frontent
+        property_id=request.json["property_id"]
+        start_date=request.json["start_date"]
+        end_date=request.json["end_date"]
+
+        #Getting the rent and deposit required based on the property
+        property=Properties.query.filter_by(id=property_id).first()
+        rent=property.rent
+
+        #Initializing deposit
+        deposit=0
+
+        #Getting the deposit required based on the property
+        if property.deposit_required == True:
+            deposit=rent
+
+        try:
+            #Creating a lease
+            new_lease=Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id)
+            db.session.add(new_lease)
+            db.session.commit()
+
+            #Creating an invoice if a deposit is required
+            if property.deposit_required == True:
+                new_invoice=Invoices(amount=deposit, invoice_date=datetime.utcnow(), due_date=datetime.utcnow() + timedelta(days=30), balance=deposit, descritpion=f"Rent deposit for property {property_id}", property_id=property_id,tenant_id=user_id, lease_id=new_lease.id)
+                db.session.add(new_invoice)
+                db.session.commit()
+
+            return make_response(jsonify(
+                {
+                    "type": "success",
+                    "message" : "Lease created successfully"
+                }
+            ),200)
+
+        except:
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "message" : "Error when creating the lease. Please try again later"
+                }
+            ),400)
 
 api.add_resource(Lease, "/lease")
 

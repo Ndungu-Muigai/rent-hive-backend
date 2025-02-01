@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Sequence
 
 db=SQLAlchemy()
 
@@ -18,6 +19,7 @@ class Users(db.Model):
 
     properties=db.relationship("Properties", backref="owner", uselist=True, foreign_keys="[Properties.owner_id]")
     leases=db.relationship("Leases", backref="tenant", uselist=True, foreign_keys="[Leases.tenant_id]")
+    invoices=db.relationship("Invoices", backref="tenant", uselist=True, foreign_keys="[Invoices.tenant_id]")
 
     def __repr__(self):
         return f"User('{self.first_name}', '{self.last_name}', '{self.email}')"
@@ -62,16 +64,20 @@ class Leases(db.Model):
     tenant_id=db.Column(db.Integer, db.ForeignKey('users.id'))
     property_id=db.Column(db.Integer, db.ForeignKey('properties.id'))
 
+invoice_ref_seq = Sequence('invoice_ref_seq')
+
 class Invoices(db.Model):
 
     __tablename__ = "invoices"
 
-    ref_no=db.Column(db.String, primary_key=True)
+    ref_no = db.Column(db.String, primary_key=True, default=lambda: f"INV{next(invoice_ref_seq):04d}")
     amount=db.Column(db.Float, nullable=False)
     invoice_date=db.Column(db.DateTime, nullable=False)
     due_date=db.Column(db.DateTime, nullable=False)
     balance=db.Column(db.Float, nullable=True)
+    description=db.Column(db.String, nullable=False)
     property_id=db.Column(db.Integer, db.ForeignKey('properties.id'))
+    tenant_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     lease_id=db.Column(db.Integer, db.ForeignKey('leases.id'))
 
     payments=db.relationship("Payments", backref="invoice", uselist=True)
