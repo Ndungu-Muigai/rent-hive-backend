@@ -492,9 +492,7 @@ class Lease(Resource):
 
         try:
             # Create lease
-            new_lease = Leases(start_date=start_date, rent_amount=rent, 
-                               deposit_amount=deposit, property_id=property_id, 
-                               end_date=end_date, tenant_id=user_id)
+            new_lease = Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id)
             db.session.add(new_lease)
 
             # Update property status
@@ -509,7 +507,8 @@ class Lease(Resource):
                 db.session.add(new_invoice)
                 db.session.commit()
 
-            return make_response(jsonify({
+            return make_response(jsonify(
+            {
                 "type": "success",
                 "message": "Lease created successfully"
             }), 200)
@@ -517,7 +516,8 @@ class Lease(Resource):
         except Exception as e:
             print("Error creating lease:", str(e))
             db.session.rollback()  # Rollback changes on failure
-            return make_response(jsonify({
+            return make_response(jsonify(
+            {
                 "type": "error",
                 "message": "Error when creating the lease. Please try again later",
                 "details": str(e)
