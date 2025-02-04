@@ -548,6 +548,8 @@ class Invoice(Resource):
         #Getting the invoices for the logged in tenant
         tenant_invoices=Invoices.query.filter_by(tenant_id=user_id).all()
 
+        print(tenant_invoices)
+
         #Creating a schema for the invoices
         invoices_schema=InvoicesSchema(many=True).dump(tenant_invoices)
 
