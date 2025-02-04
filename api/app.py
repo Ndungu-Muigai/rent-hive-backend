@@ -13,7 +13,7 @@ import json
 import hashlib
 import uuid
 
-from schema import UserSchema, PropertySchema, ImageSchema
+from schema import UserSchema, PropertySchema, ImageSchema, InvoicesSchema
 from api.models import db, Users, Properties, Images, Leases, Invoices, Payments
 from Mail.credentials import send_login_credentials
 
@@ -463,6 +463,8 @@ api.add_resource(AvailablePropertiesByID, "/available-properties/<int:id>")
 #Creating a lease
 class Lease(Resource):
     def post(self):
+
+        #Getting the session data
         session_data = get_session_data()
         user_id = session_data["user_id"]
         user_role = session_data["user_role"]
@@ -525,6 +527,39 @@ class Lease(Resource):
             }), 500)
 
 api.add_resource(Lease, "/lease")
+
+#Invoices resource
+class Invoice(Resource):
+    def get(self):
+
+        #Getting the session data
+        session_data = get_session_data()
+        user_id = session_data["user_id"]
+        user_role = session_data["user_role"]
+
+        if user_role != "Tenant":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You are not a tenant"
+            }), 409)
+        
+        #Getting the invoices for the logged in tenant
+        tenant_invoices=Invoices.query.filter_by(tenant_id=user_id).all()
+
+        #Creating a schema for the invoices
+        invoices_schema=InvoicesSchema(many=True).dump(tenant_invoices)
+
+        #Creating a response
+        return make_response(jsonify(
+            {
+                "type" : "success",
+                "invoices": invoices_schema
+            }
+        ),200)
+    
+api.add_resource(Invoice, "/invoices")
 
 #Logout resource
 class Logout(Resource):
