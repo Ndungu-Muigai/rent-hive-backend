@@ -480,12 +480,8 @@ class Lease(Resource):
         #Getting the tenants leases
         tenant_leases=Leases.query.filter_by(tenant_id=user_id).all()
 
-        print(tenant_leases)
-
         #Creating a schema to return the leases to the front-end
         tenant_leases_schema=LeaseSchema(many=True, only=("id", "property", "start_date", "duration")).dump(tenant_leases)
-
-        print(tenant_leases_schema)
 
         #Returning the response
         return make_response(jsonify(
