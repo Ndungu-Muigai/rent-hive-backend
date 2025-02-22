@@ -481,7 +481,7 @@ class Lease(Resource):
         tenant_leases=Leases.query.filter_by(tenant_id=user_id).all()
 
         #Creating a schema to return the leases to the front-end
-        tenant_leases_schema=LeaseSchema(many=True, only=("id", "property", "start_date", "duration")).dump(tenant_leases)
+        tenant_leases_schema=LeaseSchema(many=True, only=("id", "property", "start_date", "duration", "rent_amount")).dump(tenant_leases)
 
         #Returning the response
         return make_response(jsonify(
