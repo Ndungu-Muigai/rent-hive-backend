@@ -483,7 +483,17 @@ class Lease(Resource):
         print(tenant_leases)
 
         #Creating a schema to return the leases to the front-end
-        tenant_leases_schema=LeaseSchema(many=True, only=("id", "property", "")).dump(tenant_leases)
+        tenant_leases_schema=LeaseSchema(many=True, only=("id", "property", "start_date", "duration")).dump(tenant_leases)
+
+        print(tenant_leases_schema)
+
+        #Returning the response
+        return make_response(jsonify(
+            {
+                "type" : "success",
+                "leases": tenant_leases_schema
+            }
+        ),200)
 
     def post(self):
 
