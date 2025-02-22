@@ -117,7 +117,7 @@ class SignUp(Resource):
             hashed_password=hashlib.md5(password.encode("utf-8")).hexdigest()
 
             #Saving the info to the database
-            new_user=Users(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, role=role, password=hashed_password)
+            new_user=Users(first_name=first_name.capitalize(), last_name=last_name.capitalize(), email=email, phone_number=phone_number, role=role, password=hashed_password)
 
             db.session.add(new_user)
             db.session.commit()
