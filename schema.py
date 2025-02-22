@@ -23,7 +23,7 @@ class PropertySchema(Schema):
     deposit_required=fields.Boolean(required=True)
     images=fields.List(fields.Nested(ImageSchema(only=("id", "image_url"))))
 
-class InvoicesSchema(Schema):
+class InvoiceSchema(Schema):
     ref_no=fields.Str(required=True)
     amount=fields.Float(required=True)
     invoice_date=fields.DateTime(required=True)
@@ -31,3 +31,12 @@ class InvoicesSchema(Schema):
     balance=fields.Float(required=True)
     description=fields.Str(required=True)
     
+class LeaseSchema(Schema):
+    id=fields.Integer(required=True)
+    start_date=fields.DateTime(required=True)
+    end_date=fields.DateTime(required=True)
+    duration=fields.Str(required=True)
+    rent_amount=fields.Float(required=True)
+    deposit_amount=fields.Float(required=True)
+    tenant=fields.Nested(UserSchema(only=("id", "first_name", "last_name", "email", "phone_number")))
+    property=fields.Nested(PropertySchema(only=("id", "name", "location", "images")))

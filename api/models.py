@@ -62,11 +62,14 @@ class Leases(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     start_date=db.Column(db.DateTime, nullable=False)
     end_date=db.Column(db.DateTime, nullable=False)
+    duration=db.Column(db.String, nullable=False)
     rent_amount=db.Column(db.Float, nullable=False)
     deposit_amount=db.Column(db.Float, nullable=False)
     tenant_id=db.Column(db.Integer, db.ForeignKey('users.id'))
     property_id=db.Column(db.Integer, db.ForeignKey('properties.id'))
 
+    # Relationship to fetch property details
+    property = db.relationship("Properties", backref="leases")
 
 class Invoices(db.Model):
 

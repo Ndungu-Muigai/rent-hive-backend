@@ -13,7 +13,7 @@ import json
 import hashlib
 import uuid
 
-from schema import UserSchema, PropertySchema, ImageSchema, InvoicesSchema
+from schema import UserSchema, PropertySchema, ImageSchema, InvoiceSchema, LeaseSchema
 from api.models import db, Users, Properties, Images, Leases, Invoices, Payments
 from Mail.credentials import send_login_credentials
 
@@ -462,6 +462,29 @@ api.add_resource(AvailablePropertiesByID, "/available-properties/<int:id>")
 
 #Creating a lease
 class Lease(Resource):
+    def get(self):
+        #Getting the session details
+        session_data = get_session_data()
+        user_id = session_data["user_id"]
+        user_role = session_data["user_role"]
+
+        #If the role is not a tenant, return an error
+        if user_role != "Tenant":
+            return make_response(jsonify(
+            {
+                "type" : "error",
+                "reason" : "Invalid credentials",
+                "message" : "You are not a tenant"
+            }),409)
+        
+        #Getting the tenants leases
+        tenant_leases=Leases.query.filter_by(tenant_id=user_id).all()
+
+        print(tenant_leases)
+
+        #Creating a schema to return the leases to the front-end
+        tenant_leases_schema=LeaseSchema(many=True, only=("id", "property", "")).dump(tenant_leases)
+
     def post(self):
 
         #Getting the session data
@@ -480,6 +503,7 @@ class Lease(Resource):
         property_id = request.json.get("property_id")
         start_date = request.json.get("start_date")
         end_date = request.json.get("end_date")
+        duration=request.json.get("duration")
 
         # Validate property
         property = Properties.query.filter_by(id=property_id).first()
@@ -494,7 +518,7 @@ class Lease(Resource):
 
         try:
             # Create lease
-            new_lease = Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id)
+            new_lease = Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id, duration=duration)
             db.session.add(new_lease)
 
             # Update property status
@@ -551,7 +575,7 @@ class Invoice(Resource):
         print(tenant_invoices)
 
         #Creating a schema for the invoices
-        invoices_schema=InvoicesSchema(many=True).dump(tenant_invoices)
+        invoices_schema=InvoiceSchema(many=True).dump(tenant_invoices)
 
         #Creating a response
         return make_response(jsonify(
