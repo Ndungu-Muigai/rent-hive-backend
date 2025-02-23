@@ -39,4 +39,4 @@ class LeaseSchema(Schema):
     rent_amount=fields.Float(required=True)
     deposit_amount=fields.Float(required=True)
     tenant=fields.Nested(UserSchema(only=("id", "first_name", "last_name", "email", "phone_number")))
-    property=fields.Nested(PropertySchema(only=("id", "name", "description","location", "images")))
+    property=fields.Nested(PropertySchema(only=("id", "name", "description","location", "images", "property_type")))
