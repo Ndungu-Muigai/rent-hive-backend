@@ -524,7 +524,7 @@ class Lease(Resource):
 
         try:
             # Create lease
-            new_lease = Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id, duration=duration)
+            new_lease = Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id, duration=duration, owner_id=property.owner.id)
             db.session.add(new_lease)
 
             # Update property status

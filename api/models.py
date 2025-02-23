@@ -66,6 +66,7 @@ class Leases(db.Model):
     rent_amount=db.Column(db.Float, nullable=False)
     deposit_amount=db.Column(db.Float, nullable=False)
     tenant_id=db.Column(db.Integer, db.ForeignKey('users.id'))
+    owner_id=db.Column(db.Integer, db.ForeignKey('users.id'))
     property_id=db.Column(db.Integer, db.ForeignKey('properties.id'))
 
     # Relationship to fetch property details
