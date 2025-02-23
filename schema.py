@@ -26,15 +26,15 @@ class PropertySchema(Schema):
 class InvoiceSchema(Schema):
     ref_no=fields.Str(required=True)
     amount=fields.Float(required=True)
-    invoice_date=fields.DateTime(required=True)
-    due_date=fields.DateTime(required=True)
+    invoice_date=fields.Date(required=True)
+    due_date=fields.Date(required=True)
     balance=fields.Float(required=True)
     description=fields.Str(required=True)
     
 class LeaseSchema(Schema):
     id=fields.Integer(required=True)
-    start_date=fields.DateTime(required=True)
-    end_date=fields.DateTime(required=True)
+    start_date=fields.Date(required=True)
+    end_date=fields.Date(required=True)
     duration=fields.Str(required=True)
     rent_amount=fields.Float(required=True)
     deposit_amount=fields.Float(required=True)

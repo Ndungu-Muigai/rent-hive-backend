@@ -60,8 +60,8 @@ class Leases(db.Model):
     __tablename__ = 'leases'
 
     id=db.Column(db.Integer, primary_key=True)
-    start_date=db.Column(db.DateTime, nullable=False)
-    end_date=db.Column(db.DateTime, nullable=False)
+    start_date=db.Column(db.Date, nullable=False)
+    end_date=db.Column(db.Date, nullable=False)
     duration=db.Column(db.String, nullable=False)
     rent_amount=db.Column(db.Float, nullable=False)
     deposit_amount=db.Column(db.Float, nullable=False)
@@ -78,8 +78,8 @@ class Invoices(db.Model):
 
     ref_no = db.Column(db.String, primary_key=True)
     amount=db.Column(db.Float, nullable=False)
-    invoice_date=db.Column(db.DateTime, nullable=False)
-    due_date=db.Column(db.DateTime, nullable=False)
+    invoice_date=db.Column(db.Date, nullable=False)
+    due_date=db.Column(db.Date, nullable=False)
     balance=db.Column(db.Float, nullable=True)
     description=db.Column(db.String, nullable=False)
     property_id=db.Column(db.Integer, db.ForeignKey('properties.id'), nullable=False)
