@@ -558,6 +558,51 @@ class Lease(Resource):
 
 api.add_resource(Lease, "/lease")
 
+#Lease by ID resource
+class LeaseByID(Resource):
+    def get(self, id):
+
+        #Getting the session ID from the frontend
+        session_data=get_session_data()
+
+        # Extracting the user ID and role
+        user_role = session_data["user_role"]
+
+        #If the logged in user is not a tenant, return an error
+        if user_role != "Tenant":
+            return make_response(jsonify({
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You are not a tenant"
+            }), 409)
+
+        #QUerying the lease table based on the given ID
+        lease = Leases.query.filter_by(id=id).first()
+
+        #If the lease doesn't exist, return an error
+        if not lease:
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "message": "Lease could not be found",
+                "reason" : "Lease not found"
+            }),404)
+        
+        #Creating a schema of the lease details
+        lease_schema = LeaseSchema().dump(lease)
+        print(lease_schema)
+
+        #Returning the lease to the frontend
+
+        return make_response(jsonify(
+            {
+                "type": "success",
+                "lease": lease_schema
+            }
+        ))
+
+api.add_resource(LeaseByID, "/leases/<int:id>")
+
 #Invoices resource
 class Invoice(Resource):
     def get(self):
