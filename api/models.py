@@ -72,7 +72,6 @@ class Leases(db.Model):
     # Relationship to fetch property details
     property = db.relationship("Properties", backref="leases")
 
-    tenant = db.relationship("Users", foreign_keys=[tenant_id])
     owner=db.relationship("Users", foreign_keys=[owner_id])
 
 class Invoices(db.Model):
