@@ -563,6 +563,47 @@ class Invoice(Resource):
     
 api.add_resource(Invoice, "/invoices")
 
+#Profile resource
+class Profile(Resource):
+    def get(self):
+
+        #Getting the session data
+        session_data = get_session_data()
+        user_id = session_data["user_id"]
+        user_role = session_data["user_role"]
+
+        if user_role != "Tenant":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You are not a tenant"
+            }), 409)
+        
+        #Getting the user's details
+        user=Users.query.filter_by(id=user_id).first()
+
+        #If user doesn't exist, return an error
+        if not user:
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "User not found",
+                "message": "User account not found"
+            }), 404)
+
+        #Creating the schema
+        user_schema=UserSchema(only=('first_name','last_name','email','phone_number', 'role'))
+
+        #Returning the result to the frontend
+        return make_response(jsonify(
+        {
+            "type" : "success",
+            "user_details" : user_schema
+        },200))
+    
+api.add_resource(Profile, "/profile")
+
 #Logout resource
 class Logout(Resource):
     def post(self):

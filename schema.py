@@ -6,6 +6,7 @@ class UserSchema(Schema):
     last_name=fields.Str(required=True)
     email=fields.Email(required=True)
     phone_number=fields.Str(required=True)
+    role=fields.Str(required=True)
 
 class ImageSchema(Schema):
     id = fields.Int(required=True)
