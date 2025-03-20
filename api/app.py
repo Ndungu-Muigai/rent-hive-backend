@@ -668,7 +668,7 @@ class Profile(Resource):
             }), 404)
 
         #Creating the schema
-        user_schema=UserSchema(only=('first_name','last_name','email','phone_number', 'role'))
+        user_schema=UserSchema(only=('first_name','last_name','email','phone_number', 'role')).dump(user)
 
         #Returning the result to the frontend
         return make_response(jsonify(
