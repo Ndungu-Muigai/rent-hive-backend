@@ -13,7 +13,7 @@ import json
 import hashlib
 import uuid
 
-from schema import UserSchema, PropertySchema, ImageSchema, InvoicesSchema
+from schema import UserSchema, PropertySchema, ImageSchema, InvoiceSchema, LeaseSchema
 from api.models import db, Users, Properties, Images, Leases, Invoices, Payments
 from Mail.credentials import send_login_credentials
 
@@ -117,7 +117,7 @@ class SignUp(Resource):
             hashed_password=hashlib.md5(password.encode("utf-8")).hexdigest()
 
             #Saving the info to the database
-            new_user=Users(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, role=role, password=hashed_password)
+            new_user=Users(first_name=first_name.capitalize(), last_name=last_name.capitalize(), email=email, phone_number=phone_number, role=role, password=hashed_password)
 
             db.session.add(new_user)
             db.session.commit()
@@ -462,6 +462,35 @@ api.add_resource(AvailablePropertiesByID, "/available-properties/<int:id>")
 
 #Creating a lease
 class Lease(Resource):
+    def get(self):
+        #Getting the session details
+        session_data = get_session_data()
+        user_id = session_data["user_id"]
+        user_role = session_data["user_role"]
+
+        #If the role is not a tenant, return an error
+        if user_role != "Tenant":
+            return make_response(jsonify(
+            {
+                "type" : "error",
+                "reason" : "Invalid credentials",
+                "message" : "You are not a tenant"
+            }),409)
+        
+        #Getting the tenants leases
+        tenant_leases=Leases.query.filter_by(tenant_id=user_id).all()
+
+        #Creating a schema to return the leases to the front-end
+        tenant_leases_schema=LeaseSchema(many=True, only=("id", "property", "start_date", "duration", "rent_amount")).dump(tenant_leases)
+
+        #Returning the response
+        return make_response(jsonify(
+            {
+                "type" : "success",
+                "leases": tenant_leases_schema
+            }
+        ),200)
+
     def post(self):
 
         #Getting the session data
@@ -480,6 +509,7 @@ class Lease(Resource):
         property_id = request.json.get("property_id")
         start_date = request.json.get("start_date")
         end_date = request.json.get("end_date")
+        duration=request.json.get("duration")
 
         # Validate property
         property = Properties.query.filter_by(id=property_id).first()
@@ -494,7 +524,7 @@ class Lease(Resource):
 
         try:
             # Create lease
-            new_lease = Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id)
+            new_lease = Leases(start_date=start_date, rent_amount=rent, deposit_amount=deposit, property_id=property_id, end_date=end_date, tenant_id=user_id, duration=duration, owner_id=property.owner.id)
             db.session.add(new_lease)
 
             # Update property status
@@ -528,6 +558,51 @@ class Lease(Resource):
 
 api.add_resource(Lease, "/lease")
 
+#Lease by ID resource
+class LeaseByID(Resource):
+    def get(self, id):
+
+        #Getting the session ID from the frontend
+        session_data=get_session_data()
+
+        # Extracting the user ID and role
+        user_role = session_data["user_role"]
+
+        #If the logged in user is not a tenant, return an error
+        if user_role != "Tenant":
+            return make_response(jsonify({
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You are not a tenant"
+            }), 409)
+
+        #QUerying the lease table based on the given ID
+        lease = Leases.query.filter_by(id=id).first()
+
+        #If the lease doesn't exist, return an error
+        if not lease:
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "message": "Lease could not be found",
+                "reason" : "Lease not found"
+            }),404)
+        
+        #Creating a schema of the lease details
+        lease_schema = LeaseSchema().dump(lease)
+        print(lease_schema)
+
+        #Returning the lease to the frontend
+
+        return make_response(jsonify(
+            {
+                "type": "success",
+                "lease": lease_schema
+            }
+        ))
+
+api.add_resource(LeaseByID, "/leases/<int:id>")
+
 #Invoices resource
 class Invoice(Resource):
     def get(self):
@@ -551,7 +626,7 @@ class Invoice(Resource):
         print(tenant_invoices)
 
         #Creating a schema for the invoices
-        invoices_schema=InvoicesSchema(many=True).dump(tenant_invoices)
+        invoices_schema=InvoiceSchema(many=True).dump(tenant_invoices)
 
         #Creating a response
         return make_response(jsonify(
