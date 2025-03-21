@@ -647,14 +647,6 @@ class Profile(Resource):
         user_id = session_data["user_id"]
         user_role = session_data["user_role"]
 
-        if user_role != "Tenant":
-            return make_response(jsonify(
-            {
-                "type": "error",
-                "reason": "Invalid credentials",
-                "message": "You are not a tenant"
-            }), 409)
-        
         #Getting the user's details
         user=Users.query.filter_by(id=user_id).first()
 
