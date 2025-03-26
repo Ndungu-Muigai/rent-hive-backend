@@ -411,8 +411,6 @@ class PropertyByID(Resource):
             #Fetching the lease details from the database
             lease=Leases.query.filter_by(property_id=property.id).first()
 
-            print(lease)
-
             #Converting it into a JSON schema
             lease_schema=LeaseSchema(only=("start_date","end_date", "duration")).dump(lease)
 
