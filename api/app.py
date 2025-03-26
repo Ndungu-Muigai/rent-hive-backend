@@ -414,7 +414,7 @@ class PropertyByID(Resource):
             print(lease)
 
             #Converting it into a JSON schema
-            lease_schema=LeaseSchema().dump(lease)
+            lease_schema=LeaseSchema(only=("start_date","end_date", "duration")).dump(lease)
 
             #Creating the response
             return make_response(jsonify(
