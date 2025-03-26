@@ -409,7 +409,7 @@ class PropertyByID(Resource):
             tenant_schema=UserSchema(only=('first_name', 'last_name' ,'email', 'phone_number')).dump(tenant)
 
             #Fetching the lease details from the database
-            lease=Lease.query.filter_by(property_id=property.id).first()
+            lease=Leases.query.filter_by(property_id=property.id).first()
 
             print(lease)
 
