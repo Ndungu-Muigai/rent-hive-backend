@@ -401,15 +401,25 @@ class PropertyByID(Resource):
         
         #Fetching the tenant and lease details if available for the property
         if property.property_status == "Leased":
+
+            #Fetching the tenant from the database
             tenant=Users.query.filter_by(id=property.tenant_id).first()
+
+            #Converting it into a JSON schema
+            tenant_schema=UserSchema(only=('first_name', 'last_name' ,'email', 'phone_number')).dump(tenant)
+
+            #Fetching the lease details from the database
             lease=property.leases
+
+            #Converting it into a JSON schema
+            lease_schema=LeaseSchema().dump(lease)
 
             #Creating the response
             return make_response(jsonify(
             {
                 "property" : property_schema,
-                "tenant" : tenant,
-                "lease" : lease
+                "tenant" : tenant_schema,
+                "lease" : lease_schema
             }))
 
         #Creating the response
