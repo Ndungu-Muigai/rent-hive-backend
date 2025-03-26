@@ -264,7 +264,7 @@ class Property(Resource):
         properties=Properties.query.filter_by(owner_id=user_id).all()
 
         #Creating a schema for the properties
-        property_schema=PropertySchema(many=True).dump(properties)
+        property_schema=PropertySchema(many=True, only=('id', 'name', 'description','images')).dump(properties)
 
         #Returning a response to the front end
         return make_response(jsonify(
@@ -371,6 +371,55 @@ class Property(Resource):
                 }), 409)
 
 api.add_resource(Property, "/properties")
+
+#Getting a property by ID
+class PropertyByID(Resource):
+    def get(self, id):
+        #Getting the session ID from the frontend
+        session_data=get_session_data()
+
+        #Extracting the user ID and role
+        user_id=session_data["user_id"]
+        user_role=session_data["user_role"]
+
+        #If the role is not an owner, return an error
+        if user_role != "Owner":
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "reason": "Invalid credentials",
+                    "message" : "You are not an owner"
+                }
+            ),409)
+        
+        #Getting the property by ID
+        property=Properties.query.filter_by(id=id).first()
+
+        #Creating a schema for the properties
+        property_schema=PropertySchema().dump(property)
+
+        
+        #Fetching the tenant and lease details if available for the property
+        if property.property_status == "Leased":
+            tenant=Users.query.filter_by(id=property.tenant_id).first()
+            lease=property.leases
+
+            #Creating the response
+            return make_response(jsonify(
+            {
+                "property" : property_schema,
+                "tenant" : tenant,
+                "lease" : lease
+            }))
+
+        #Creating the response
+        return make_response(jsonify(
+        {
+            "property" : property_schema
+        }))
+
+
+api.add_resource(PropertyByID, "/properties/<int:id>")
 
 #Getting all available properties for the tenants
 class AvailableProperties(Resource):
