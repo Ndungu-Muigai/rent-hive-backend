@@ -411,6 +411,8 @@ class PropertyByID(Resource):
             #Fetching the lease details from the database
             lease=property.leases
 
+            print(lease)
+
             #Converting it into a JSON schema
             lease_schema=LeaseSchema().dump(lease)
 
