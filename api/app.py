@@ -824,7 +824,11 @@ class Profile(Resource):
                 s3.delete_object(Bucket=S3_BUCKET_NAME, Key=old_s3_path)
 
             except Exception as e:
-                return make_response(jsonify({"error": "Error deleting old profile image. Please try again later!"}), 500)
+                return make_response(jsonify(
+                    {
+                        "type": "error",
+                        "message": "Error deleting old profile image. Please try again later!"
+                    }), 500)
             
         #Upload the image to S3 and add the URL to the database
         try:
@@ -835,9 +839,17 @@ class Profile(Resource):
             db.session.commit()
 
             #Returning the response
-            return make_response(jsonify({"success": "Profile picture updated successfully!"}), 200)
+            return make_response(jsonify(
+                {
+                    "type": "success",
+                    "message": "Profile picture updated successfully!"
+                }), 200)
         except Exception as e:
-            return make_response(jsonify({"error": "Error uploading file. Please try again later!"}), 500)
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "message": "Error uploading file. Please try again later!"
+                }), 500)
             
 api.add_resource(Profile, "/profile")
 
