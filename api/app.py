@@ -745,14 +745,14 @@ class Profile(Resource):
             }), 404)
         
         #Getting the details to be updated
-        old_password=request.json.get("old_password")
+        current_password=request.json.get("current_password")
         new_password=request.json.get("new_password")
         confirm_password=request.json.get("confirm_password")
 
         #Checking if the old password matches the password in the database
-        old_password=hashlib.md5(old_password.encode("utf-8")).hexdigest()
+        current_password=hashlib.md5(current_password.encode("utf-8")).hexdigest()
 
-        if old_password != user.password:
+        if current_password != user.password:
             return make_response(jsonify(
                 {
                     "type" : "error",
