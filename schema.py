@@ -7,7 +7,7 @@ class UserSchema(Schema):
     email=fields.Email(required=True)
     phone_number=fields.Str(required=True)
     role=fields.Str(required=True)
-    profile_image=fields.Str(required=True)
+    profile_picture=fields.Str(required=True)
 
 class ImageSchema(Schema):
     id = fields.Int(required=True)
