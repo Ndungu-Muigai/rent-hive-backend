@@ -703,7 +703,6 @@ class Profile(Resource):
         #Getting the session data
         session_data = get_session_data()
         user_id = session_data["user_id"]
-        user_role = session_data["user_role"]
 
         #Getting the user's details
         user=Users.query.filter_by(id=user_id).first()
@@ -727,6 +726,119 @@ class Profile(Resource):
             "user_details" : user_schema
         },200))
     
+    #Updating the user password
+    def post(self):
+        #Getting the session data
+        session_data = get_session_data()
+        user_id = session_data["user_id"]
+
+        #Getting the user's details
+        user=Users.query.filter_by(id=user_id).first()
+
+        #If user doesn't exist, return an error
+        if not user:
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "User not found",
+                "message": "User account not found"
+            }), 404)
+        
+        #Getting the details to be updated
+        old_password=request.json.get("old_password")
+        new_password=request.json.get("new_password")
+        confirm_password=request.json.get("confirm_password")
+
+        #Checking if the old password matches the password in the database
+        old_password=hashlib.md5(old_password.encode("utf-8")).hexdigest()
+
+        if old_password != user.password:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "The value of the current password provided does not match your current password"
+                }
+            ),409)
+        
+        #Checking if the new password and confirm password match
+        if new_password != confirm_password:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "The new password and confirm password values do not match"
+                }
+            ),409)
+        
+        #Hashing the password
+        new_password=hashlib.md5(new_password.encode("utf-8")).hexdigest()
+
+        #Updating the password
+        user.password=new_password
+        db.session.add(user)
+        db.session.commit()
+
+        #Returning the response to the frontend
+        return make_response(jsonify(
+            {
+                "type" : "success",
+                "message" : "Password updated successfully"
+            }
+        ))
+    
+    #Updating the profile image
+    def patch(self):
+        #Getting the session data
+        session_data = get_session_data()
+        user_id = session_data["user_id"]
+
+        #Getting the user's details
+        user=Users.query.filter_by(id=user_id).first()
+
+        #If user doesn't exist, return an error
+        if not user:
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "User not found",
+                "message": "User account not found"
+            }), 404)
+        
+        #Getting the image 
+        profile_image = request.files.get("profile_image")
+
+        #Extracting the file name
+        image_file_name=profile_image.filename
+
+        #Generating a unique file name
+        unique_profile_image_name = str(uuid.uuid1()) + "_" + image_file_name
+
+        #Path to the folder in the s3 bucket
+        s3_path = f"images/{unique_profile_image_name}"
+
+        #Checking if the user has a profile image. If image exists, delete it from the database and from the S3 bucket
+        if user.profile_picture:
+            old_s3_path = f"images/{user.profile_picture}"
+
+            # Delete the old image from S3
+            try:
+                s3.delete_object(Bucket=S3_BUCKET_NAME, Key=old_s3_path)
+
+            except Exception as e:
+                return make_response(jsonify({"error": "Error deleting old profile image. Please try again later!"}), 500)
+            
+        #Upload the image to S3 and add the URL to the database
+        try:
+            s3.upload_fileobj(profile_image, S3_BUCKET_NAME, s3_path)
+
+            user.profile_picture=unique_profile_image_name
+            db.session.add(user)
+            db.session.commit()
+
+            #Returning the response
+            return make_response(jsonify({"success": "Profile picture updated successfully!"}), 200)
+        except Exception as e:
+            return make_response(jsonify({"error": "Error uploading file. Please try again later!"}), 500)
+            
 api.add_resource(Profile, "/profile")
 
 #Logout resource

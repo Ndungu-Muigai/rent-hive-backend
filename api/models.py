@@ -17,6 +17,7 @@ class Users(db.Model):
     phone_number=db.Column(db.String, unique=True, nullable=False)
     role=db.Column(db.String, nullable=False)
     password=db.Column(db.String, nullable=False)
+    profile_picture=db.Column(db.String, nullable=True)
     created_at=db.Column(db.DateTime, server_default=db.func.now())
     updated_at=db.Column(db.DateTime, server_default=db.func.now())
 
