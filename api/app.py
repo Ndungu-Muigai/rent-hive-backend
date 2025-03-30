@@ -1056,7 +1056,6 @@ class Tenants(Resource):
                     {
                         "type" : "success",
                         "message" : "Tenant account created successfully",
-                        "new_owner" : new_tenant
                     }
                 ),200)
             
