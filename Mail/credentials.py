@@ -35,18 +35,9 @@ def send_login_credentials(first_name, last_name, email, password):
 
     send_email=sib_api_v3_sdk.SendSmtpEmail(to=to, html_content=email_content,sender=sender, subject=subject)
 
-    try:
-        print("Sending the email")
-        # Attempt to send the email
-        api_instance.send_transac_email(send_email)
 
-        print("Email sent successfully")
+    print("Sending the email")
+    # Attempt to send the email
+    api_instance.send_transac_email(send_email)
 
-    except sib_api_v3_sdk.rest.ApiException as e:
-        # Catch any API-related errors and print/log the error details
-        print(f"Error sending email to {email}: {e}")
-        return {"error": "An unexpected error occurred. Please try again later!"}
-    except Exception as e:
-        # Catch any other errors that may occur
-        print(f"Unexpected error: {e}")
-        return {"error": "An unexpected error occurred. Please try again later!"}
+    print("Email sent successfully")
