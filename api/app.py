@@ -907,7 +907,7 @@ api.add_resource(Tenants, "/tenants")
 
 #Individual tenant endpoint
 class TenantByID(Resource):
-    def get(self, id):
+    def patch(self, id):
 
         #Getting the session data
         session_data = get_session_data()
