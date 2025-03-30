@@ -702,6 +702,18 @@ api.add_resource(Invoice, "/invoices")
 class Owners(Resource):
     def get(self):
 
+        #Getting the session data
+        session_data = get_session_data()
+        user_role = session_data["user_role"]
+
+        if user_role != "Admin":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You don't have the permissions to view this page"
+            }), 409)
+
         #Querying the users table to get all the owners
         owners=Users.query.filter_by(role = "Owner").all()
 
@@ -724,14 +736,156 @@ class Owners(Resource):
     
 api.add_resource(Owners, "/owners")
 
+#Owner by ID resource
+class OwnerByID(Resource):
+    def patch(self, id):
+
+        #Getting the session data
+        session_data = get_session_data()
+        user_role = session_data["user_role"]
+
+        if user_role != "Admin":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You don't have the permissions to perform this action"
+            }), 409)
+        
+        #Getting the owner from the database
+        owner = Users.query.filter_by(id=id).first()
+
+        #If no owner, return an error
+        if not owner:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "The owner account could not be found"
+                }
+            ), 404)
+
+        #Getting the data from the frontend
+        email=request.json.get("email")
+        phone_number=request.json.get("phone_number")
+
+        try:
+
+            #Updating the owner's details
+            owner.email = email
+            owner.phone_number = phone_number
+            db.session.commit()
+
+            return make_response(jsonify(
+                {
+                    "type" : "success",
+                    "message" : "Owner details updated successfully"
+                }
+            ), 200)
+
+        except:
+
+            #Roll back changes if error is encountered
+            db.session.rollback()
+            return make_response(jsonify(
+                {
+                    "type"  : "error",
+                    "message" : "Error while updating details. Please try again later"
+                }
+            ), 409)
+        
+    def delete(self, id):
+        
+        #Getting the session data
+        session_data = get_session_data()
+        user_role = session_data["user_role"]
+
+        if user_role != "Admin":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You don't have the permissions to perform this action"
+            }), 409)
+        
+        #Getting the owner from the database
+        owner = Users.query.filter_by(id=id).first()
+
+        #If no owner, return an error
+        if not owner:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "The owner account could not be found"
+                }
+            ), 404)
+
+        try:
+            # Deleting related properties
+            owner_properties=Properties.query.filter_by(owner_id=id).all()
+
+            #Deleting all leases related to the properties
+            for prop in owner_properties:
+
+                #Getting and deleting the leases for the properties
+                leases = Leases.query.filter_by(property_id=prop.id).all()
+                for lease in leases:
+                    db.session.delete(lease)
+                    db.session.commit()
+
+                #Getting and deleting the invoices for the properties related to the owner
+                invoices=Invoices.query.filter_by(property_id=prop.id).all()
+                for invoice in invoices:
+                    db.session.delete(invoice)
+                    db.session.commit()
+
+                #Getting and deleting the images for each property
+                images = Images.query.filter_by(property_id=prop.id).all()
+                for image in images:
+                    db.session.delete(image)
+                    db.session.commit()
+
+                db.session.delete(prop)
+
+            # Finally, deleting the owner
+            db.session.delete(owner)
+            db.session.commit()
+
+            return make_response(jsonify(
+                {
+                    "type": "success",
+                    "message": "User and related records deleted successfully"
+                }), 200)
+
+        except Exception as e:
+            db.session.rollback()
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "reason": "Database Error",
+                    "message": str(e)
+                }), 500)
+
+api.add_resource(OwnerByID, "/owners/<int:id>")
+
 #Tenants endpoint
 class Tenants(Resource):
     def get(self):
 
+        #Getting the session data
+        session_data = get_session_data()
+        user_role = session_data["user_role"]
+
+        if user_role != "Admin":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You don't have the permissions to view this page"
+            }), 409)
+
         #Querying the users table to get all the tenants
         tenants=Users.query.filter_by(role = "Tenant").all()
 
-    
         #Creating a JSON schema for the owners
         tenants_schema = UserSchema(many=True).dump(tenants)
 
@@ -750,6 +904,135 @@ class Tenants(Resource):
         ),200)
 
 api.add_resource(Tenants, "/tenants")
+
+#Individual tenant endpoint
+class TenantByID(Resource):
+    def get(self, id):
+
+        #Getting the session data
+        session_data = get_session_data()
+        user_role = session_data["user_role"]
+
+        if user_role != "Admin":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You don't have the permissions to perform this action"
+            }), 409)
+        
+        #Getting the owner from the database
+        tenant = Users.query.filter_by(id=id).first()
+
+        #If no tenant, return an error
+        if not tenant:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "The tenant account could not be found"
+                }
+            ), 404)
+
+        #Getting the data from the frontend
+        email=request.json.get("email")
+        phone_number=request.json.get("phone_number")
+
+        try:
+
+            #Updating the owner's details
+            tenant.email = email
+            tenant.phone_number = phone_number
+            db.session.commit()
+
+            return make_response(jsonify(
+                {
+                    "type" : "success",
+                    "message" : "Tenant details updated successfully"
+                }
+            ), 200)
+
+        except:
+
+            #Roll back changes if error is encountered
+            db.session.rollback()
+            return make_response(jsonify(
+                {
+                    "type"  : "error",
+                    "message" : "Error while updating details. Please try again later"
+                }
+            ), 409)
+        
+    def delete(self, id):
+        
+        #Getting the session data
+        session_data = get_session_data()
+        user_role = session_data["user_role"]
+
+        if user_role != "Admin":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You don't have the permissions to perform this action"
+            }), 409)
+        
+        #Getting the owner from the database
+        tenant = Users.query.filter_by(id=id).first()
+
+        #If no owner, return an error
+        if not tenant:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "The tenant account could not be found"
+                }
+            ), 404)
+
+        try:
+            #Getting and deleting the leases related to the tenant
+            leases = Leases.query.filter_by(tenant_id=id).all()
+            for lease in leases:
+                #Deleting the leases
+                db.session.delete(lease)
+                db.session.commit()
+
+            #Getting the invoices for the tenant
+            invoices = Invoices.query.filter_by(tenant_id=id).all()
+
+            for invoice in invoices:
+                #Getting the payments for each invoice
+                payments = Payments.query.filter_by(invoice_ref_no=invoice.ef_no).all()
+
+                #Deleting all the payments
+                for payment in payments:
+                    db.session.delete(payment)
+                    db.session.commit()
+
+                #Deleting the invoices
+                db.session.delete(invoice)
+                db.session.commit()
+            
+            #Deleting the tenant
+            db.session.delete(tenant)
+            db.session.commit()
+
+            return make_response(jsonify(
+                {
+                    "type" : "success",
+                    "message" : "Tenant details updated successfully"
+                }
+            ), 200)
+
+        except Exception as e:
+            db.session.rollback()
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "reason": "Database Error",
+                    "message": str(e)
+                }), 500)
+        
+api.add_resource(TenantByID, "/tenants/<int:id>")
 
 #Profile resource
 class Profile(Resource):
