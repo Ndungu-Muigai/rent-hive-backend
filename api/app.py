@@ -262,6 +262,21 @@ class Dashboard(Resource):
             response["properties"]=properties
             response["occupied"]=occupied_properties
             response["vacant"]=vacant_properties
+
+        elif user_role == "Tenant":
+            #Getting the pending invoices
+            pending_invoices=Invoices.query.filter_by(tenant_id=user_id,status="Pending").all()
+
+            #Adding together the pending amount
+            pending_amount=0
+            for invoice in pending_invoices:
+                pending_amount+=invoice.amount
+
+            #Getting the tenant's leased properties
+            leased_properties=Properties.query.filter_by(tenant_id=user_id, property_status="Leased").count()
+
+            response["rent_due"]=pending_amount
+            response["leased_properties"]=leased_properties
             
         else:
             #Adding to the response array
