@@ -696,6 +696,48 @@ class Invoice(Resource):
     
 api.add_resource(Invoice, "/invoices")
 
+#Admin end points
+
+#Owners endpoint
+class Owners(Resource):
+    def get(self):
+
+        #Querying the users table to get all the owners
+        owners=Users.query.filter_by(role = "Owner").all()
+
+        #Creating a JSON schema for the owners
+        owners_schema = UserSchema(many=True).dump(owners)
+
+        #Returning the response to the frontend
+        return make_response(jsonify(
+            {
+                "type" : "success",
+                "owners": owners_schema
+            }
+        ),200)
+    
+api.add_resource(Owners, "/owners")
+
+#Tenants endpoint
+class Tenants(Resource):
+    def get(self):
+
+        #Querying the users table to get all the tenants
+        tenants=Users.query.filter_by(role = "Tenant").all()
+
+        #Creating a JSON schema for the owners
+        tenants_schema = UserSchema(many=True).dump(tenants)
+
+        #Returning the response to the frontend
+        return make_response(jsonify(
+            {
+                "type" : "success",
+                "tenants": tenants_schema
+            }
+        ),200)
+
+api.add_resource(Tenants, "/tenants")
+
 #Profile resource
 class Profile(Resource):
     def get(self):
