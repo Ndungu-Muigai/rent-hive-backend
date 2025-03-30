@@ -564,10 +564,10 @@ class Lease(Resource):
             }), 409)
 
         # Get request data
-        property_id = request.json.get("property_id")
-        start_date = request.json.get("start_date")
-        end_date = request.json.get("end_date")
-        duration=request.json.get("duration")
+        property_id = request.get_json("property_id")
+        start_date = request.get_json("start_date")
+        end_date = request.get_json("end_date")
+        duration=request.get_json("duration")
 
         # Validate property
         property = Properties.query.filter_by(id=property_id).first()
@@ -765,8 +765,8 @@ class OwnerByID(Resource):
             ), 404)
 
         #Getting the data from the frontend
-        email=request.json.get("email")
-        phone_number=request.json.get("phone_number")
+        email=request.get_json("email")
+        phone_number=request.get_json("phone_number")
 
         try:
 
@@ -934,8 +934,8 @@ class TenantByID(Resource):
             ), 404)
 
         #Getting the data from the frontend
-        email=request.json.get("email")
-        phone_number=request.json.get("phone_number")
+        email=request.get_json("email")
+        phone_number=request.get_json("phone_number")
 
         try:
 
@@ -1083,9 +1083,9 @@ class Profile(Resource):
             }), 404)
         
         #Getting the details to be updated
-        current_password=request.json.get("current_password")
-        new_password=request.json.get("new_password")
-        confirm_password=request.json.get("confirm_password")
+        current_password=request.get_json("current_password")
+        new_password=request.get_json("new_password")
+        confirm_password=request.get_json("confirm_password")
 
         #Checking if the old password matches the password in the database
         current_password=hashlib.md5(current_password.encode("utf-8")).hexdigest()
