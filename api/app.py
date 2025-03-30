@@ -940,6 +940,9 @@ class TenantByID(Resource):
         email=request.get_json("email")
         phone_number=request.get_json("phone_number")
 
+        print(email)
+        print(phone_number)
+
         try:
 
             #Updating the owner's details
@@ -963,7 +966,7 @@ class TenantByID(Resource):
                     "type"  : "error",
                     "message" : "Error while updating details. Please try again later"
                 }
-            ), 409)
+            ), 500)
         
     def delete(self, id):
         
