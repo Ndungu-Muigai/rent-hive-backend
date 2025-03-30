@@ -734,6 +734,85 @@ class Owners(Resource):
             }
         ),200)
     
+    def post(self):
+
+        #Getting the session data
+        session_data = get_session_data()
+        user_role = session_data["user_role"]
+
+        if user_role != "Admin":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You don't have the permissions to view this page"
+            }), 409)
+        
+        #Getting the data from the front end
+        data = request.get_json()
+
+        first_name=data.get("first_name")
+        last_name=data.get("last_name")
+        email=data.get("email")
+        phone_number=data.get("phone_number")
+        role=data.get("role")
+
+        #Checking if an account with the given email exists
+        existing_account = Users.query.filter_by(email=email).first()
+        if existing_account:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "An account with the given email already exists"
+                }
+            ), 409)
+        
+        try:
+            #Generating a random password for the user
+            password = str(uuid.uuid4())
+
+            #Hashing the password
+            hashed_password=hashlib.md5(password.encode("utf-8")).hexdigest()
+
+            #If account doesn't exists, create the account
+            new_owner=Users(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, role=role, password=hashed_password)
+
+            db.session.add(new_owner)
+            db.session.commit()
+
+            try:
+                #Sending the login credentials via email
+                send_login_credentials(first_name=first_name,last_name=last_name, email=email, password=password)
+
+                #Returning the response
+                return make_response(jsonify(
+                    {
+                        "type" : "success",
+                        "message" : "Owner account created successfully",
+                        "new_owner" : new_owner
+                    }
+                ),200)
+            
+            except Exception as e:
+                print(f"Email error: {e}")
+                db.session.rollback()
+                return make_response(jsonify(
+                    {
+                    "type": "error",
+                    "message": "Account created but failed to send email. Please check your email settings."
+                }), 500)
+            
+        except Exception as e:
+            print(e)
+            #Rolling back the database changes
+            db.session.rollback()
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "message": "An error occured while creating your account. Please try again later!"
+                }
+            ),400)
+    
 api.add_resource(Owners, "/owners")
 
 #Owner by ID resource
@@ -768,9 +847,6 @@ class OwnerByID(Resource):
         data = request.get_json()  # Get the entire JSON payload
         email = data.get("email")  # Extract email as a string
         phone_number = data.get("phone_number")
-
-        print(email)
-        print(phone_number)
 
         try:
 
@@ -906,6 +982,84 @@ class Tenants(Resource):
                 "tenants": tenants_schema
             }
         ),200)
+    
+    def post(self):
+        #Getting the session data
+        session_data = get_session_data()
+        user_role = session_data["user_role"]
+
+        if user_role != "Admin":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You don't have the permissions to view this page"
+            }), 409)
+        
+        #Getting the data from the front end
+        data = request.get_json()
+
+        first_name=data.get("first_name")
+        last_name=data.get("last_name")
+        email=data.get("email")
+        phone_number=data.get("phone_number")
+        role=data.get("role")
+
+        #Checking if an account with the given email exists
+        existing_account = Users.query.filter_by(email=email).first()
+        if existing_account:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "An account with the given email already exists"
+                }
+            ), 409)
+        
+        try:
+            #Generating a random password for the user
+            password = str(uuid.uuid4())
+
+            #Hashing the password
+            hashed_password=hashlib.md5(password.encode("utf-8")).hexdigest()
+
+            #If account doesn't exists, create the account
+            new_tenant=Users(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, role=role, password=hashed_password)
+
+            db.session.add(new_tenant)
+            db.session.commit()
+
+            try:
+                #Sending the login credentials via email
+                send_login_credentials(first_name=first_name,last_name=last_name, email=email, password=password)
+
+                #Returning the response
+                return make_response(jsonify(
+                    {
+                        "type" : "success",
+                        "message" : "Tenant account created successfully",
+                        "new_owner" : new_tenant
+                    }
+                ),200)
+            
+            except Exception as e:
+                print(f"Email error: {e}")
+                db.session.rollback()
+                return make_response(jsonify(
+                    {
+                    "type": "error",
+                    "message": "Account created but failed to send email. Please check your email settings."
+                }), 500)
+            
+        except Exception as e:
+            print(e)
+            #Rolling back the database changes
+            db.session.rollback()
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "message": "An error occured while creating your account. Please try again later!"
+                }
+            ),400)
 
 api.add_resource(Tenants, "/tenants")
 
@@ -941,8 +1095,6 @@ class TenantByID(Resource):
         data = request.get_json()  # Get the entire JSON payload
         email = data.get("email")  # Extract email as a string
         phone_number = data.get("phone_number")
-        print(email)
-        print(phone_number)
 
         try:
 
