@@ -287,7 +287,7 @@ class Dashboard(Resource):
             
 
         #Combining the data fetches
-        elif user_role == "Tenant" or user_role == "Owner":
+        if user_role == "Tenant" or user_role == "Owner":
             # Get the leases expiring in less than 30 days
             expiring_leases_30_days = Leases.query.filter(Leases.tenant_id == user_id, Leases.end_date <= today + timedelta(days=30)).count()
 
