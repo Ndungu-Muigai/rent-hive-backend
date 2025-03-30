@@ -275,9 +275,24 @@ class Dashboard(Resource):
             #Getting the tenant's leased properties
             leased_properties=Properties.query.filter_by(tenant_id=user_id, property_status="Leased").count()
 
+            #Getting the leases whose leases are expiring in less than 30 days, between 31 and 60 days and the ones that are expiring after 61+days from today
+            today=datetime.today()
+
+            # Get the leases expiring in less than 30 days
+            expiring_leases_30_days = Leases.query.filter(Leases.tenant_id == user_id, Leases.end_date <= today + timedelta(days=30)).all().count()
+
+            # Get the leases expiring between 31 and 60 days
+            expiring_leases_31_60_days = Leases.query.filter(Leases.tenant_id == user_id,Leases.end_date > today + timedelta(days=30),Leases.end_date <= today + timedelta(days=60)).all().count()
+
+            # Get the leases expiring after 61+ days
+            expiring_leases_61_plus_days = Leases.query.filter(Leases.tenant_id == user_id,Leases.end_date > today + timedelta(days=60)).all().count()
+
             response["type"]="success"
             response["rent_due"]=pending_amount
             response["leased_properties"]=leased_properties
+            response["expiring_30_days"]=expiring_leases_30_days
+            response["expiring_31_60_days"]=expiring_leases_31_60_days
+            response["expiring_61_plus_days"]=expiring_leases_61_plus_days
             
         else:
             #Adding to the response array
