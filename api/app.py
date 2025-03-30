@@ -275,6 +275,7 @@ class Dashboard(Resource):
             #Getting the tenant's leased properties
             leased_properties=Properties.query.filter_by(tenant_id=user_id, property_status="Leased").count()
 
+            response["type"]="success"
             response["rent_due"]=pending_amount
             response["leased_properties"]=leased_properties
             
