@@ -251,11 +251,17 @@ class Dashboard(Resource):
             tenants=Users.query.filter_by(role="Tenant").count()
             properties=Properties.query.count()
 
+            #Getting the occupied and vacant properties
+            occupied_properties=Properties.query.filter_by(property_status="Leased").count()
+            vacant_properties=Properties.query.filter_by(property_status="Available").count()
+
             #Adding the data to the response dict
             response["type"]="success"
             response["owners"]=owners
             response["tenants"]=tenants
             response["properties"]=properties
+            response["occupied"]=occupied_properties
+            response["vacant"]=vacant_properties
             
         else:
             #Adding to the response array
