@@ -732,8 +732,8 @@ class Tenants(Resource):
         #Getting the number of properties for each tenant
         for index, tenant in enumerate(tenants):
             tenant_properties = Properties.query.filter_by(tenant_id=tenant.id).count()
-            
-            tenants_schema[index]["properties"] = tenant_properties
+
+            tenants_schema[index]["properties_leased"] = tenant_properties
 
         #Returning the response to the frontend
         return make_response(jsonify(
