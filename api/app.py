@@ -708,6 +708,12 @@ class Owners(Resource):
         #Creating a JSON schema for the owners
         owners_schema = UserSchema(many=True).dump(owners)
 
+        #Getting the number of properties for each owner
+        for index, owner in enumerate(owners):
+            owner_properties = Properties.query.filter_by(owner_id=owner.id).count()
+
+            owners_schema[index]["properties_listed"] = owner_properties
+
         #Returning the response to the frontend
         return make_response(jsonify(
             {
