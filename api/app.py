@@ -265,7 +265,7 @@ class Dashboard(Resource):
 
         elif user_role == "Tenant":
             #Getting the pending invoices
-            pending_invoices=Invoices.query.filter_by(tenant_id=user_id,status="Pending").all()
+            pending_invoices=Invoices.query.filter(Invoices.tenant_id==user_id, Invoices.balance > 0).all()
 
             #Adding together the pending amount
             pending_amount=0
