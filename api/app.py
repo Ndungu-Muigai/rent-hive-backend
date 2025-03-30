@@ -234,15 +234,15 @@ class Dashboard(Resource):
 
         #Getting the number of tenants, properties and owners in the database for the admins
         elif user_role == "Admin":
-            tenants=Tenants.query.count()
-            properties=Properties.query.count()
             owners=Users.query.filter_by(role="Owner").count()
+            tenants=Users.query.filter_by(role="Tenant").count()
+            properties=Properties.query.count()
 
             #Adding the data to the response dict
             response["type"]="success"
+            response["owners"]=owners
             response["tenants"]=tenants
             response["properties"]=properties
-            response["owners"]=owners
             
         else:
             #Adding to the response array
