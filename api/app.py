@@ -768,6 +768,9 @@ class OwnerByID(Resource):
         email=request.get_json("email")
         phone_number=request.get_json("phone_number")
 
+        print(email)
+        print(phone_number)
+
         try:
 
             #Updating the owner's details
@@ -782,8 +785,8 @@ class OwnerByID(Resource):
                 }
             ), 200)
 
-        except:
-
+        except Exception as e:
+            print(e)
             #Roll back changes if error is encountered
             db.session.rollback()
             return make_response(jsonify(
@@ -791,7 +794,7 @@ class OwnerByID(Resource):
                     "type"  : "error",
                     "message" : "Error while updating details. Please try again later"
                 }
-            ), 409)
+            ), 500)
         
     def delete(self, id):
         
