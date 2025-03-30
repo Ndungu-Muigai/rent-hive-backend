@@ -921,7 +921,7 @@ class TenantByID(Resource):
                 "message": "You don't have the permissions to perform this action"
             }), 409)
         
-        #Getting the owner from the database
+        #Getting the tenant from the database
         tenant = Users.query.filter_by(id=id).first()
 
         #If no tenant, return an error
