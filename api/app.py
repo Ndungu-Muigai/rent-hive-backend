@@ -789,7 +789,6 @@ class Owners(Resource):
                     {
                         "type" : "success",
                         "message" : "Owner account created successfully",
-                        "new_owner" : new_owner
                     }
                 ),200)
             
