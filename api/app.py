@@ -226,11 +226,24 @@ class Dashboard(Resource):
 
         #Getting the number of properties the owner has
         if user_role == "Owner":
+            #Getting the total number of properties the owner has
             properties=Properties.query.filter_by(owner_id=user_id).count()
+
+            #Getting the total number of tenants the home owner has
+            tenants=db.session.query(Leases.tenant_id).filter_by(owner_id=user_id).distinct().count()
+
+            #Getting the total number of units available
+            available_units=Properties.query.filter_by(owner_id=user_id, property_status ="Available").count()
+
+            #Getting the total number of the owner's leased properties
+            leased_properties=Properties.query.filter_by(owner_id=user_id, property_status ="Leased").count()
 
             #Adding to the response array
             response["type"]="success"
             response["properties"]=properties
+            response["tenants"]=tenants
+            response["vacant"]=available_units
+            response["rented"]=leased_properties
 
         #Getting the number of tenants, properties and owners in the database for the admins
         elif user_role == "Admin":
