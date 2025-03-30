@@ -730,11 +730,10 @@ class Tenants(Resource):
         tenants_schema = UserSchema(many=True).dump(tenants)
 
         #Getting the number of properties for each tenant
-        for tenant in tenants:
-            tenant_properties = Properties.query.filter_by(tenant_id = tenant.id).count()
-
-            #Adding the properties count to the tenants schema
-            tenants_schema[tenants_schema.index(tenant)]["properties"] = tenant_properties
+        for index, tenant in enumerate(tenants):
+            tenant_properties = Properties.query.filter_by(tenant_id=tenant.id).count()
+            
+            tenants_schema[index]["properties"] = tenant_properties
 
         #Returning the response to the frontend
         return make_response(jsonify(
