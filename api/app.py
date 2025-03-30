@@ -767,6 +767,16 @@ class Owners(Resource):
                 }
             ), 409)
         
+        #Checking if the phone number entered is in the database
+        existing_phone_number = Users.query.filter_by(phone_number=phone_number).first()
+        if existing_phone_number:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "An account with the given phone number already exists"
+                }
+            ))
+        
         try:
             #Generating a random password for the user
             password = str(uuid.uuid4())
@@ -1013,6 +1023,16 @@ class Tenants(Resource):
                     "message" : "An account with the given email already exists"
                 }
             ), 409)
+        
+        #Checking if the phone number entered is in the database
+        existing_phone_number = Users.query.filter_by(phone_number=phone_number).first()
+        if existing_phone_number:
+            return make_response(jsonify(
+                {
+                    "type" : "error",
+                    "message" : "An account with the given phone number already exists"
+                }
+            ))
         
         try:
             #Generating a random password for the user
