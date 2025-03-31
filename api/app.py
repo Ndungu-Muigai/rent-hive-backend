@@ -1536,7 +1536,7 @@ class AdminProperties(Resource):
         all_properties = Properties.query.all()
 
         #Creating a schema for the properties
-        property_schema=PropertySchema(many=True, only=('id', 'name', 'description','images')).dump(all_properties)
+        property_schema=PropertySchema(many=True, only=('id', 'name', 'description','images', 'rent')).dump(all_properties)
 
         #Getting a list of all home owners
         all_home_owners = Users.query.filter_by(role = "Owner").all()
