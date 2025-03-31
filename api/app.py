@@ -15,6 +15,7 @@ import uuid
 
 from schema import UserSchema, PropertySchema, ImageSchema, InvoiceSchema, LeaseSchema
 from api.models import db, Users, Properties, Images, Leases, Invoices, Payments
+from api.Invoices import generate_monthly_invoices
 from Mail.credentials import send_login_credentials
 
 app = Flask(__name__)
@@ -772,6 +773,13 @@ class Invoice(Resource):
         ),200)
     
 api.add_resource(Invoice, "/invoices")
+
+#Generating invoices monthly
+class GenerateInvoice(Resource):
+    def get(self):
+        generate_monthly_invoices()
+
+api.add_resource(GenerateInvoice, "/generate-invoice")
 
 #Admin end points
 
