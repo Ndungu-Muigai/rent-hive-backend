@@ -1517,7 +1517,7 @@ class TenantByID(Resource):
 api.add_resource(TenantByID, "/tenants/<int:id>")
 
 #Properties resource
-class Properties(Resource):
+class AdminProperties(Resource):
     def get(self):
 
         #Getting the session data
@@ -1649,7 +1649,7 @@ class Properties(Resource):
                     "message": "Error processing property. Please try again later!"
                 }), 409)
 
-api.add_resource(Properties, "/all-properties")
+api.add_resource(AdminProperties, "/all-properties")
 
 #Profile resource
 class Profile(Resource):
