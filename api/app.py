@@ -1516,6 +1516,141 @@ class TenantByID(Resource):
         
 api.add_resource(TenantByID, "/tenants/<int:id>")
 
+#Properties resource
+class Properties(Resource):
+    def get(self):
+
+        #Getting the session data
+        session_data = get_session_data()
+        user_role = session_data["user_role"]
+
+        if user_role != "Admin":
+            return make_response(jsonify(
+            {
+                "type": "error",
+                "reason": "Invalid credentials",
+                "message": "You don't have the permissions to view this page"
+            }), 409)
+        
+        #Getting the list of all properties
+        all_properties = Properties.query.all()
+
+        #Creating a schema for the properties
+        property_schema=PropertySchema(many=True, only=('id', 'name', 'description','images')).dump(all_properties)
+
+        #Getting a list of all home owners
+        all_home_owners = Users.query.filter_by(role = "Owner").all()
+
+        #Creating a schema for the owners
+        owner_schema=UserSchema(many=True, only=('id', 'first_name', 'last_name')).dump(all_home_owners)
+
+        #Returning a response to the front end
+        return make_response(jsonify(
+        {
+            "type" : "success",
+            "properties" : property_schema,
+            "owners" : owner_schema
+        }),200)
+    
+    def post(self):
+
+        # Getting the session ID from the frontend
+        session_data = get_session_data()
+
+        # Extracting the user ID and role
+        user_role = session_data["user_role"]
+
+        # If the role is not an owner, return an error
+        if user_role != "Admin":
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "message": "You are not an owner"
+                }
+            ), 409)
+
+        # Getting the data from the front end
+        name = request.form.get("name")
+        description = request.form.get("description")
+        property_type = request.form.get("property_type")
+        location = request.form.get("location")
+        rent = request.form.get("rent")
+        images = request.files.getlist("images[]")  # Get a list of images
+        deposit = request.form.get("deposit")
+        owner_id=request.form.get("owner_id")
+
+        # Checking if the property already exists in the database
+        property = Properties.query.filter_by(name=name).first()
+
+        if property:
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "message": "Property already exists"
+                }), 409)
+
+        try:
+            #Saving the deposit as a Boolean based on the form input
+            if deposit == "Yes":
+                deposit = True
+            
+            elif deposit == "No":
+                deposit = False
+
+            # Create a new property but do not commit yet
+            new_property = Properties(name=name, property_type=property_type, description=description, location=location, rent=rent, owner_id=owner_id, deposit_required=deposit)
+            db.session.add(new_property)
+            db.session.commit()
+
+            # Iterate over each image and upload it to S3
+            for image in images:
+                # Getting the image file name
+                image_name = secure_filename(image.filename)
+                # Generating a unique ID for each image
+                unique_image_name = str(uuid.uuid1()) + "_" + image_name
+
+                # Setting the path to the images folder in the S3 bucket
+                s3_path = f"products/{unique_image_name}"
+
+                try:
+                    # Uploading the image to the S3 bucket
+                    s3.upload_fileobj(image, S3_BUCKET_NAME, s3_path)
+
+                    # Add the image to the database if upload is successful
+                    new_image = Images(property_id=new_property.id, image_url=s3_path)
+                    db.session.add(new_image)
+                except Exception as e:
+                    print(f"Error uploading image {image_name}: {e}")
+                    # If any image upload fails, rollback the entire transaction
+                    db.session.rollback()
+                    return make_response(jsonify(
+                        {
+                            "type": "error",
+                            "message": "Error uploading images. Please try again later!"
+                        }), 409)
+
+            # Commit the images to the database after all images are successfully uploaded
+            db.session.commit()
+
+            # Returning a response to the frontend
+            return make_response(jsonify(
+                {
+                    "type": "success",
+                    "message": "Property added successfully!"
+                }), 200)
+
+        except Exception as e:
+            print(f"Error processing property: {e}")
+            # If there's any error during property creation, rollback the entire transaction
+            db.session.rollback()
+            return make_response(jsonify(
+                {
+                    "type": "error",
+                    "message": "Error processing property. Please try again later!"
+                }), 409)
+
+api.add_resource(Properties, "/all-properties")
+
 #Profile resource
 class Profile(Resource):
     def get(self):
